@@ -141,11 +141,39 @@
             <input type="text" id="organization" placeholder="Your Company" required>
         </div>
 
-        <div class="form-group">
-            <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" placeholder="+1234567890" required>
-            <p class="input-hint">📱 Include country code (e.g., +1 for USA, +91 for India)</p>
-        </div>
+     <div class="form-group">
+                <label for="phone">Phone Number (Optional - for SMS verification)</label>
+                <div class="info-box">
+                    <p>📱 Add your phone number to enable SMS verification for enhanced security</p>
+                </div>
+                <div class="phone-input-wrapper">
+                    <select class="country-select" id="countryCode">
+                        <option value="+1" data-country="US">🇺🇸 +1 (US)</option>
+                        <option value="+44" data-country="GB">🇬🇧 +44 (UK)</option>
+                        <option value="+91" data-country="IN">🇮🇳 +91 (India)</option>
+                        <option value="+61" data-country="AU">🇦🇺 +61 (Australia)</option>
+                        <option value="+81" data-country="JP">🇯🇵 +81 (Japan)</option>
+                        <option value="+86" data-country="CN">🇨🇳 +86 (China)</option>
+                        <option value="+49" data-country="DE">🇩🇪 +49 (Germany)</option>
+                        <option value="+33" data-country="FR">🇫🇷 +33 (France)</option>
+                        <option value="+39" data-country="IT">🇮🇹 +39 (Italy)</option>
+                        <option value="+34" data-country="ES">🇪🇸 +34 (Spain)</option>
+                        <option value="+7" data-country="RU">🇷🇺 +7 (Russia)</option>
+                        <option value="+55" data-country="BR">🇧🇷 +55 (Brazil)</option>
+                        <option value="+52" data-country="MX">🇲🇽 +52 (Mexico)</option>
+                        <option value="+82" data-country="KR">🇰🇷 +82 (S. Korea)</option>
+                        <option value="+27" data-country="ZA">🇿🇦 +27 (S. Africa)</option>
+                        <option value="+971" data-country="AE">🇦🇪 +971 (UAE)</option>
+                        <option value="+65" data-country="SG">🇸🇬 +65 (Singapore)</option>
+                        <option value="+63" data-country="PH">🇵🇭 +63 (Philippines)</option>
+                        <option value="+60" data-country="MY">🇲🇾 +60 (Malaysia)</option>
+                        <option value="+64" data-country="NZ">🇳🇿 +64 (New Zealand)</option>
+                    </select>
+                    <input type="tel" id="phone" class="phone-input" placeholder="555 123 4567" pattern="[0-9\s\-()]*">
+                </div>
+                <p class="help-text">We'll use this for SMS verification (Twilio required)</p>
+            </div>
+
 
         <div class="form-group">
             <label for="password">Password</label>
@@ -369,4 +397,5 @@
         });
     </script>
 </body>
+
 </html>

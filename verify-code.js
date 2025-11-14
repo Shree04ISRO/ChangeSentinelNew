@@ -1,32 +1,29 @@
-// netlify/functions/verify-code.js
-// This function handles verifying SMS codes
-
-// Note: This shares the same Map with send-sms.js in the same Netlify function instance
-// For production, use Redis or a database
+// Store verification codes (shared with send-sms function)
+// In production, use Redis or a database
 const verificationCodes = new Map();
 
 exports.handler = async (event, context) => {
-  // Enable CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS'
-  };
-
-  // Handle preflight request
+  // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
-      headers,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
       body: ''
     };
   }
 
-  // Only allow POST requests
+  // Only allow POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
@@ -38,76 +35,86 @@ exports.handler = async (event, context) => {
     if (!phoneNumber || !code) {
       return {
         statusCode: 400,
-        headers,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ 
           error: 'Phone number and code are required' 
         })
       };
     }
 
-    // Check if code exists
-    const stored = verificationCodes.get(phoneNumber);
+    // Get stored code
+    const storedData = verificationCodes.get(phoneNumber);
 
-    if (!stored) {
-      console.log('❌ No code found for:', phoneNumber);
+    if (!storedData) {
       return {
-        statusCode: 404,
-        headers,
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ 
-          success: false,
           error: 'No verification code found. Please request a new code.' 
         })
       };
     }
 
-    // Check if code expired
-    if (Date.now() > stored.expiry) {
+    // Check expiration
+    if (Date.now() > storedData.expiresAt) {
       verificationCodes.delete(phoneNumber);
-      console.log('⏰ Code expired for:', phoneNumber);
       return {
-        statusCode: 410,
-        headers,
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ 
-          success: false,
-          error: 'Code expired. Please request a new code.' 
+          error: 'Verification code expired. Please request a new code.' 
         })
       };
     }
 
     // Verify code
-    if (stored.code !== code) {
-      console.log('❌ Invalid code for:', phoneNumber);
+    if (storedData.code === code) {
+      // Remove used code
+      verificationCodes.delete(phoneNumber);
+      
       return {
-        statusCode: 401,
-        headers,
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          success: true,
+          message: 'Verification successful'
+        })
+      };
+    } else {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ 
-          success: false,
-          error: 'Invalid code. Please try again.' 
+          error: 'Invalid verification code' 
         })
       };
     }
 
-    // Success - delete used code
-    verificationCodes.delete(phoneNumber);
-    console.log('✅ Code verified successfully for:', phoneNumber);
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        message: 'Verification successful'
-      })
-    };
-
   } catch (error) {
-    console.error('❌ Verification Error:', error);
+    console.error('Verification Error:', error);
     
     return {
       statusCode: 500,
-      headers,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        success: false,
         error: 'Verification failed',
         details: error.message
       })

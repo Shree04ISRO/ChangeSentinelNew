@@ -1,0 +1,11 @@
+{
+  "name": "changesentinel",
+  "version": "1.0.0",
+  "description": "ChangeSentinel with SMS authentication",
+  "dependencies": {
+    "twilio": "^4.19.0"
+  },
+  "scripts": {
+    "start": "netlify dev"
+  }
+}

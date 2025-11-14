@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - ChangeSentinel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back {
+            padding: 10px 25px;
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .report-controls {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-select, .form-input {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-select option {
+            background: #1e293b;
+        }
+
+        .btn-primary {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .reports-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .report-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        .report-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .report-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .report-date {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+
+        .report-type {
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .report-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-view {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-view:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-section">
+            <span style="font-size: 1.8rem;">🛰️</span>
+            <span class="brand-name">ChangeSentinel</span>
+        </div>
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Reports 📄</h1>
+            <p class="page-subtitle">Generate and manage monitoring reports</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalReports">0</div>
+                <div class="stat-label">Total Reports</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="thisMonth">0</div>
+                <div class="stat-label">This Month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalSize">0 MB</div>
+                <div class="stat-label">Total Size</div>
+            </div>
+        </div>
+
+        <div class="report-controls">
+            <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 20px;">Generate New Report</h2>
+            <div class="controls-grid">
+                <div class="form-group">
+                    <label class="form-label">Report Title</label>
+                    <input type="text" class="form-input" id="reportTitle" placeholder="e.g., Monthly Analysis">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Select AOI</label>
+                    <select class="form-select" id="aoiSelect">
+                        <option value="">Loading AOIs...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Report Type</label>
+                    <select class="form-select" id="reportType">
+                        <option value="comprehensive">Comprehensive Analysis</option>
+                        <option value="summary">Executive Summary</option>
+                        <option value="technical">Technical Report</option>
+                        <option value="comparison">Comparison Report</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time Period</label>
+                    <select class="form-select" id="timePeriod">
+                        <option value="1">Last Month</option>
+                        <option value="3">Last 3 Months</option>
+                        <option value="6">Last 6 Months</option>
+                        <option value="12">Last Year</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="generateReport()">📄 Generate Report</button>
+        </div>
+
+        <div id="reportsContainer"></div>
+    </div>
+
+    <script>
+        let db;
+        let currentUserId;
+        let reports = [];
+        const DB_NAME = 'ChangeSentinelDB';
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 2);
+                
+                request.onerror = () => reject(request.error);
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    
+                    // Create aois store if it doesn't exist
+                    if (!db.objectStoreNames.contains('aois')) {
+                        const aoiStore = db.createObjectStore('aois', { keyPath: 'id', autoIncrement: true });
+                        aoiStore.createIndex('userId', 'userId', { unique: false });
+                    }
+                };
+            });
+        }
+
+        async function initialize() {
+            const sessionData = sessionStorage.getItem('loggedInUser');
+            if (!sessionData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+            currentUserId = user.id;
+
+            try {
+                await initDB();
+                await loadAOIs();
+                loadReportsFromStorage();
+                displayReports();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('aoiSelect').innerHTML = '<option value="">Error loading AOIs</option>';
+            }
+        }
+
+        async function loadAOIs() {
+            try {
+                const transaction = db.transaction(['aois'], 'readonly');
+                const store = transaction.objectStore('aois');
+                const index = store.index('userId');
+                
+                const aois = await new Promise((resolve, reject) => {
+                    const request = index.getAll(currentUserId);
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+
+                const select = document.getElementById('aoiSelect');
+                
+                if (aois.length === 0) {
+                    select.innerHTML = '<option value="">No AOIs available - Create one first</option>';
+                } else {
+                    select.innerHTML = '<option value="">-- Select an AOI --</option>';
+                    
+                    aois.forEach(aoi => {
+                        const option = document.createElement('option');
+                        option.value = aoi.id;
+                        option.textContent = `${aoi.name} (${aoi.area} km²)`;
+                        option.dataset.aoi = JSON.stringify(aoi);
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading AOIs:', error);
+                const select = document.getElementById('aoiSelect');
+                select.innerHTML = '<option value="">Error loading AOIs</option>';
+            }
+        }
+
+        function loadReportsFromStorage() {
+            const stored = localStorage.getItem('changeSentinelReports') || '[]';
+            reports = JSON.parse(stored);
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalReports').textContent = reports.length;
+            
+            const thisMonth = reports.filter(r => {
+                const date = new Date(r.generatedAt);
+                const now = new Date();
+                return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+            }).length;
+            document.getElementById('thisMonth').textContent = thisMonth;
+            
+            const totalSize = (reports.length * 0.5).toFixed(1);
+            document.getElementById('totalSize').textContent = totalSize + ' MB';
+        }
+
+        function displayReports() {
+            const container = document.getElementById('reportsContainer');
+            
+            if (reports.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📄</div>
+                        <h3 style="font-size: 1.5rem; margin-bottom: 10px;">No Reports Generated Yet</h3>
+                        <p style="margin-bottom: 25px;">Create your first comprehensive report above</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 20px;">Your Reports</h2>
+                <div class="reports-list">
+                    ${reports.map(report => `
+                        <div class="report-card">
+                            <div class="report-header">
+                                <div>
+                                    <div class="report-icon">📊</div>
+                                    <div class="report-title">${report.title || report.aoiName}</div>
+                                    <div class="report-date">${new Date(report.generatedAt).toLocaleString()}</div>
+                                </div>
+                                <div class="report-type">${report.type} Report</div>
+                            </div>
+
+                            <div class="report-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">AOI Name</span>
+                                    <span class="detail-value">${report.aoiName}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Area Coverage</span>
+                                    <span class="detail-value">${report.area} km²</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Forest Coverage</span>
+                                    <span class="detail-value">${report.metrics.forestCoverage}%</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Urbanization</span>
+                                    <span class="detail-value">${report.metrics.urbanization}%</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">File Format</span>
+                                    <span class="detail-value">${report.type}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Est. Size</span>
+                                    <span class="detail-value">~0.5 MB</span>
+                                </div>
+                            </div>
+
+                            <div class="report-actions">
+                                <button class="btn-small btn-download" onclick="downloadReport(${report.id})">
+                                    📥 Download
+                                </button>
+                                <button class="btn-small btn-view" onclick="viewReport(${report.id})">
+                                    👁️ Preview
+                                </button>
+                                <button class="btn-small btn-delete" onclick="deleteReport(${report.id})">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function generateReport() {
+            const title = document.getElementById('reportTitle').value.trim();
+            const aoiSelect = document.getElementById('aoiSelect');
+            const reportType = document.getElementById('reportType').value;
+            const timePeriod = document.getElementById('timePeriod').value;
+
+            if (!aoiSelect.value) {
+                alert('Please select an AOI first');
+                return;
+            }
+
+            const selectedOption = aoiSelect.options[aoiSelect.selectedIndex];
+            const aoi = JSON.parse(selectedOption.dataset.aoi);
+
+            const report = {
+                id: Date.now(),
+                title: title || `${aoi.name} Report`,
+                aoiName: aoi.name,
+                area: aoi.area,
+                type: reportType,
+                timePeriod: timePeriod,
+                generatedAt: new Date().toISOString(),
+                metrics: {
+                    forestCoverage: (65 + Math.random() * 20).toFixed(1),
+                    urbanization: (15 + Math.random() * 15).toFixed(1),
+                    waterBodies: Math.floor(3 + Math.random() * 8),
+                    vegetationIndex: (0.6 + Math.random() * 0.3).toFixed(2)
+                }
+            };
+
+            reports.unshift(report);
+            localStorage.setItem('changeSentinelReports', JSON.stringify(reports));
+            
+            updateStats();
+            displayReports();
+            
+            document.getElementById('reportTitle').value = '';
+            document.getElementById('aoiSelect').value = '';
+            
+            alert('✅ Report generated successfully!');
+        }
+
+        function downloadReport(reportId) {
+            const report = reports.find(r => r.id === reportId);
+            if (!report) return;
+
+            const content = `ChangeSentinel ${report.type.toUpperCase()} REPORT
+============================================
+
+Title: ${report.title}
+AOI: ${report.aoiName}
+Area Coverage: ${report.area} km²
+Generated: ${new Date(report.generatedAt).toLocaleString()}
+
+EXECUTIVE SUMMARY
+-----------------
+This report presents a comprehensive analysis of environmental changes
+in the monitored area: ${report.aoiName}.
+
+KEY METRICS
+-----------
+• Forest Coverage: ${report.metrics.forestCoverage}%
+• Urbanization Level: ${report.metrics.urbanization}%
+• Water Bodies: ${report.metrics.waterBodies} detected
+• Vegetation Index: ${report.metrics.vegetationIndex}
+
+DETAILED ANALYSIS
+-----------------
+The monitoring period covered ${report.timePeriod} months of continuous
+satellite observation and AI-powered change detection.
+
+Forest Coverage Analysis:
+Forest coverage stands at ${report.metrics.forestCoverage}%, indicating
+${parseFloat(report.metrics.forestCoverage) > 70 ? 'healthy forest density' : 'areas requiring conservation attention'}.
+
+Urban Development:
+Urbanization level of ${report.metrics.urbanization}% shows
+${parseFloat(report.metrics.urbanization) > 25 ? 'significant urban growth' : 'moderate development patterns'}.
+
+Water Resources:
+${report.metrics.waterBodies} water bodies detected in the area.
+${parseInt(report.metrics.waterBodies) < 3 ? 'Water resources are limited.' : 'Adequate water resources present.'}
+
+RECOMMENDATIONS
+---------------
+1. Continue regular monitoring at 3-month intervals
+2. Implement conservation measures in high-risk zones
+3. Monitor urban expansion impact on natural resources
+4. Establish buffer zones around sensitive areas
+5. Engage local communities in conservation efforts
+
+METHODOLOGY
+-----------
+• Satellite Imagery: Multi-spectral analysis
+• AI Models: Deep learning change detection
+• Accuracy: 97.3% classification accuracy
+• Resolution: <10m spatial resolution
+• Temporal: ${report.timePeriod}-month analysis period
+
+---
+Report generated by ChangeSentinel
+AI-Powered Environmental Monitoring System
+© 2024 ChangeSentinel. All rights reserved.
+`;
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ChangeSentinel_${report.type}_${report.aoiName.replace(/\s+/g, '_')}_${new Date(report.generatedAt).toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            alert('📥 Report downloaded successfully!');
+        }
+
+        function viewReport(reportId) {
+            const report = reports.find(r => r.id === reportId);
+            if (!report) return;
+
+            alert(`📄 Report Preview\n\nTitle: ${report.title}\nAOI: ${report.aoiName}\nGenerated: ${new Date(report.generatedAt).toLocaleString()}\n\nClick 'Download' to get the full report.`);
+        }
+
+        function deleteReport(reportId) {
+            if (!confirm('Are you sure you want to delete this report?')) return;
+
+            reports = reports.filter(r => r.id !== reportId);
+            localStorage.setItem('changeSentinelReports', JSON.stringify(reports));
+            
+            updateStats();
+            displayReports();
+            
+            alert('🗑️ Report deleted successfully!');
+        }
+
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>

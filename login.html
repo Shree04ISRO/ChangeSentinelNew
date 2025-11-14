@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login - ChangeSentinel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 50px 40px;
+            max-width: 450px;
+            width: 100%;
+            animation: slideIn 0.6s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 3rem; margin-bottom: 15px; }
+        h2 { color: #667eea; font-size: 2rem; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 0.95rem; }
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .alert.show { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+        .alert-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .alert-info { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        .step-dot.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 30px;
+        }
+        .form-step { display: none; }
+        .form-step.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .form-group { margin-bottom: 25px; }
+        label {
+            display: block;
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        .code-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+        .code-input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 0;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .link-group {
+            text-align: center;
+            margin-top: 25px;
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+        .link-group a { color: #667eea; text-decoration: none; font-weight: 600; }
+        .timer-text {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        .info-box {
+            background: #f0f9ff;
+            border: 2px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-box p { color: #1e40af; font-size: 0.9rem; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🛰️</div>
+            <h2 id="stepTitle">Secure Login</h2>
+            <p class="subtitle" id="stepSubtitle">Sign in to ChangeSentinel</p>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step-dot active" id="dot1"></div>
+            <div class="step-dot" id="dot2"></div>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <!-- STEP 1: Login -->
+        <div id="step1" class="form-step active">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="your@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <button class="btn" onclick="handleLogin()" id="loginBtn">Sign In</button>
+
+            <div class="link-group">
+                Don't have an account? <a href="register.html">Register</a>
+            </div>
+        </div>
+
+        <!-- STEP 2: SMS Verification -->
+        <div id="step2" class="form-step">
+            <div class="info-box">
+                <p>📱 <strong>SMS Verification Required</strong><br>
+                A 6-digit code has been sent to your phone</p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">📱</div>
+                <p style="color: #6b7280;">Enter the code sent to <strong id="phoneDisplay"></strong></p>
+            </div>
+
+            <div class="code-inputs">
+                <input type="text" maxlength="1" class="code-input" id="code1" onkeyup="moveToNext(this, 'code2')" onkeydown="moveToPrev(this, null, event)">
+                <input type="text" maxlength="1" class="code-input" id="code2" onkeyup="moveToNext(this, 'code3')" onkeydown="moveToPrev(this, 'code1', event)">
+                <input type="text" maxlength="1" class="code-input" id="code3" onkeyup="moveToNext(this, 'code4')" onkeydown="moveToPrev(this, 'code2', event)">
+                <input type="text" maxlength="1" class="code-input" id="code4" onkeyup="moveToNext(this, 'code5')" onkeydown="moveToPrev(this, 'code3', event)">
+                <input type="text" maxlength="1" class="code-input" id="code5" onkeyup="moveToNext(this, 'code6')" onkeydown="moveToPrev(this, 'code4', event)">
+                <input type="text" maxlength="1" class="code-input" id="code6" onkeyup="checkComplete()" onkeydown="moveToPrev(this, 'code5', event)">
+            </div>
+
+            <button class="btn" onclick="verifyCode()" id="verifyBtn" disabled>Verify & Login</button>
+
+            <p class="timer-text" id="resendTimer">
+                Didn't receive code? <a href="#" onclick="resendCode(); return false;" id="resendLink">Resend</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const DB_NAME = 'ChangeSentinelDB';
+        const DB_VERSION = 2;
+        let db = null;
+        let currentStep = 1;
+        let currentUser = null;
+        let resendCountdown = 0;
+        let userPhone = '';
+
+        // IMPORTANT: Get your actual Netlify site URL
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8888/.netlify/functions'
+            : '/.netlify/functions';
+
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains('users')) {
+                        const userStore = db.createObjectStore('users', { keyPath: 'id', autoIncrement: true });
+                        userStore.createIndex('email', 'email', { unique: true });
+                    }
+                };
+            });
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type} show`;
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.step-dot').forEach(d => d.classList.remove('active'));
+            
+            document.getElementById(`step${step}`).classList.add('active');
+            document.getElementById(`dot${step}`).classList.add('active');
+            
+            const titles = {
+                1: { title: 'Secure Login', subtitle: 'Sign in to ChangeSentinel' },
+                2: { title: 'SMS Verification', subtitle: 'Enter your code' }
+            };
+            
+            document.getElementById('stepTitle').textContent = titles[step].title;
+            document.getElementById('stepSubtitle').textContent = titles[step].subtitle;
+            currentStep = step;
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+
+            if (!email || !password) {
+                showAlert('❌ Please enter both email and password', 'error');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing In...';
+
+            try {
+                await initDB();
+                
+                const transaction = db.transaction(['users'], 'readonly');
+                const store = transaction.objectStore('users');
+                const index = store.index('email');
+                
+                const user = await new Promise((resolve) => {
+                    const request = index.get(email);
+                    request.onsuccess = () => resolve(request.result);
+                });
+
+                if (!user) {
+                    showAlert('❌ Email not found. Please register first.', 'error');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                    return;
+                }
+
+                if (user.password !== password) {
+                    showAlert('❌ Incorrect password', 'error');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                    return;
+                }
+
+                currentUser = user;
+                
+                // Check for phone number
+                const twoFASettings = JSON.parse(localStorage.getItem(`2fa_${email}`)) || null;
+                
+                if (!twoFASettings || !twoFASettings.phone) {
+                    showAlert('❌ No phone number registered. Please contact support.', 'error');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                    return;
+                }
+
+                userPhone = twoFASettings.phone;
+                
+                // Send SMS using Netlify Function
+                showAlert('✅ Login successful! Sending SMS...', 'success');
+                await sendSMS(userPhone);
+                
+                // Show phone number (masked)
+                const maskedPhone = userPhone.slice(0, -4).replace(/\d/g, '*') + userPhone.slice(-4);
+                document.getElementById('phoneDisplay').textContent = maskedPhone;
+                
+                setTimeout(() => goToStep(2), 1500);
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('❌ Login failed. Please try again.', 'error');
+            }
+
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Sign In';
+        }
+
+        async function sendSMS(phoneNumber) {
+            try {
+                const response = await fetch(`${API_BASE}/send-sms`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phoneNumber })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to send SMS');
+                }
+
+                console.log('✅ SMS sent:', data.messageSid);
+                showAlert('✅ SMS sent! Check your phone.', 'success');
+                startResendCountdown();
+
+            } catch (error) {
+                console.error('SMS Error:', error);
+                showAlert(`⚠️ SMS failed: ${error.message}`, 'info');
+            }
+        }
+
+        function startResendCountdown() {
+            resendCountdown = 60;
+            updateResendTimer();
+
+            const interval = setInterval(() => {
+                resendCountdown--;
+                updateResendTimer();
+                if (resendCountdown <= 0) clearInterval(interval);
+            }, 1000);
+        }
+
+        function updateResendTimer() {
+            const timerElement = document.getElementById('resendTimer');
+            const resendLink = document.getElementById('resendLink');
+
+            if (resendCountdown > 0) {
+                timerElement.innerHTML = `Didn't receive code? Resend in ${resendCountdown}s`;
+                if (resendLink) {
+                    resendLink.style.pointerEvents = 'none';
+                    resendLink.style.opacity = '0.5';
+                }
+            } else {
+                timerElement.innerHTML = 'Didn\'t receive code? <a href="#" onclick="resendCode(); return false;" id="resendLink">Resend</a>';
+                if (resendLink) {
+                    resendLink.style.pointerEvents = 'auto';
+                    resendLink.style.opacity = '1';
+                }
+            }
+        }
+
+        async function resendCode() {
+            if (resendCountdown > 0) return;
+            showAlert('📱 Resending SMS code...', 'info');
+            await sendSMS(userPhone);
+        }
+
+        function moveToNext(current, nextId) {
+            if (current.value.length === 1 && nextId) {
+                document.getElementById(nextId).focus();
+            }
+            checkComplete();
+        }
+
+        function moveToPrev(current, prevId, event) {
+            if (event.key === 'Backspace' && current.value.length === 0 && prevId) {
+                document.getElementById(prevId).focus();
+            }
+        }
+
+        function checkComplete() {
+            const code1 = document.getElementById('code1').value;
+            const code2 = document.getElementById('code2').value;
+            const code3 = document.getElementById('code3').value;
+            const code4 = document.getElementById('code4').value;
+            const code5 = document.getElementById('code5').value;
+            const code6 = document.getElementById('code6').value;
+
+            const verifyBtn = document.getElementById('verifyBtn');
+            verifyBtn.disabled = !(code1 && code2 && code3 && code4 && code5 && code6);
+        }
+
+        async function verifyCode() {
+            const verifyBtn = document.getElementById('verifyBtn');
+            
+            const enteredCode = 
+                document.getElementById('code1').value +
+                document.getElementById('code2').value +
+                document.getElementById('code3').value +
+                document.getElementById('code4').value +
+                document.getElementById('code5').value +
+                document.getElementById('code6').value;
+
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+
+            try {
+                const response = await fetch(`${API_BASE}/verify-code`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phoneNumber: userPhone,
+                        code: enteredCode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showAlert(`❌ ${data.error}`, 'error');
+                    clearCodeInputs();
+                    verifyBtn.disabled = false;
+                    verifyBtn.textContent = 'Verify & Login';
+                    return;
+                }
+
+                if (data.success) {
+                    showAlert('✅ Verification successful!', 'success');
+                    setTimeout(() => completeLogin(), 1500);
+                } else {
+                    showAlert('❌ Invalid code. Please try again.', 'error');
+                    clearCodeInputs();
+                }
+
+            } catch (error) {
+                console.error('Verification error:', error);
+                showAlert('❌ Verification failed', 'error');
+            }
+
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify & Login';
+        }
+
+        function clearCodeInputs() {
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById(`code${i}`).value = '';
+            }
+            document.getElementById('code1').focus();
+        }
+
+        function completeLogin() {
+            sessionStorage.setItem('loggedInUser', JSON.stringify({
+                id: currentUser.id,
+                name: currentUser.name,
+                email: currentUser.email,
+                organization: currentUser.organization,
+                loginTime: new Date().toISOString()
+            }));
+
+            showAlert('✅ Login successful! Redirecting...', 'success');
+
+            setTimeout(() => {
+                window.location.href = 'Dashboard.html';
+            }, 1500);
+        }
+
+        window.addEventListener('load', () => {
+            initDB();
+            
+            const existingSession = sessionStorage.getItem('loggedInUser');
+            if (existingSession) {
+                window.location.href = 'Dashboard.html';
+            }
+        });
+    </script>
+</body>
+</html>

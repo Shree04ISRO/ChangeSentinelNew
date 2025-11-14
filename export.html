@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Data - ChangeSentinel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back {
+            padding: 10px 25px;
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .export-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .export-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+
+        .export-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .export-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .export-description {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .export-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .export-features li {
+            padding: 8px 0;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .export-features li::before {
+            content: "✓ ";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .btn-export {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .bulk-export {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .bulk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .bulk-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-select, .form-input {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-select option {
+            background: #1e293b;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-item input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-item label {
+            font-size: 0.9rem;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .info-box h3 {
+            color: #3b82f6;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .info-box ul {
+            list-style-position: inside;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+        }
+
+        .notification {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 20px 24px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            max-width: 380px;
+            display: none;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-section">
+            <span style="font-size: 1.8rem;">🛰️</span>
+            <span class="brand-name">ChangeSentinel</span>
+        </div>
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Export Data 📥</h1>
+            <p class="page-subtitle">Download your monitoring data in various formats</p>
+        </div>
+
+        <!-- AOI Selection Section -->
+        <div style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); padding: 25px; border-radius: 15px; border: 2px solid rgba(102, 126, 234, 0.2); margin-bottom: 30px;">
+            <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 15px;">📍 Select Area for Export</h2>
+            <div class="form-group" style="max-width: 500px;">
+                <label class="form-label">Choose AOI (Optional - Leave blank for all areas)</label>
+                <select class="form-select" id="quickExportAOI">
+                    <option value="">Loading AOIs...</option>
+                </select>
+            </div>
+            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; margin-top: 10px;">
+                💡 Selecting an AOI will filter all quick exports below to that specific area
+            </p>
+        </div>
+
+        <div class="export-options">
+            <div class="export-card">
+                <div class="export-icon">📊</div>
+                <div class="export-title">CSV Export</div>
+                <div class="export-description">
+                    Export tabular data for spreadsheet analysis. Perfect for Excel, Google Sheets, or data processing.
+                </div>
+                <ul class="export-features">
+                    <li>All metrics and measurements</li>
+                    <li>Time series data</li>
+                    <li>Compatible with all spreadsheet tools</li>
+                    <li>Easy data manipulation</li>
+                </ul>
+                <button class="btn-export" onclick="exportCSV()">📊 Export CSV</button>
+            </div>
+
+            <div class="export-card">
+                <div class="export-icon">🗺️</div>
+                <div class="export-title">GeoJSON</div>
+                <div class="export-description">
+                    Export geographical data for GIS applications. Compatible with QGIS, ArcGIS, and mapping tools.
+                </div>
+                <ul class="export-features">
+                    <li>Vector geometry data</li>
+                    <li>Coordinate systems included</li>
+                    <li>GIS software compatible</li>
+                    <li>Spatial analysis ready</li>
+                </ul>
+                <button class="btn-export" onclick="exportGeoJSON()">🗺️ Export GeoJSON</button>
+            </div>
+
+            <div class="export-card">
+                <div class="export-icon">📄</div>
+                <div class="export-title">PDF Report</div>
+                <div class="export-description">
+                    Generate comprehensive PDF reports with charts, maps, and detailed analysis.
+                </div>
+                <ul class="export-features">
+                    <li>Professional formatted reports</li>
+                    <li>Charts and visualizations</li>
+                    <li>Print-ready documents</li>
+                    <li>Executive summaries</li>
+                </ul>
+                <button class="btn-export" onclick="exportPDF()">📄 Export PDF</button>
+            </div>
+
+            <div class="export-card">
+                <div class="export-icon">🖼️</div>
+                <div class="export-title">Image Archive</div>
+                <div class="export-description">
+                    Download satellite imagery and change detection visualizations in various formats.
+                </div>
+                <ul class="export-features">
+                    <li>High-resolution satellite images</li>
+                    <li>Change detection overlays</li>
+                    <li>PNG, JPEG, TIFF formats</li>
+                    <li>Georeferenced imagery</li>
+                </ul>
+                <button class="btn-export" onclick="exportImages()">🖼️ Export Images</button>
+            </div>
+        </div>
+
+        <div class="bulk-export">
+            <div class="bulk-header">
+                <h2 class="bulk-title">📦 Bulk Export</h2>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Select AOI</label>
+                    <select class="form-select" id="bulkAOISelect">
+                        <option value="">Loading AOIs...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Export Format</label>
+                    <select class="form-select" id="bulkFormat">
+                        <option value="csv">CSV (Comma Separated)</option>
+                        <option value="json">JSON (JavaScript Object)</option>
+                        <option value="geojson">GeoJSON (Geographic)</option>
+                        <option value="zip">ZIP Archive (All Formats)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date Range</label>
+                    <select class="form-select" id="dateRange">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30">Last 30 Days</option>
+                        <option value="90" selected>Last 3 Months</option>
+                        <option value="180">Last 6 Months</option>
+                        <option value="365">Last Year</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Data Compression</label>
+                    <select class="form-select" id="compression">
+                        <option value="none">No Compression</option>
+                        <option value="standard" selected>Standard (ZIP)</option>
+                        <option value="high">High Compression</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label">Select Data Types to Export</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="export_aois" checked>
+                        <label for="export_aois">Areas of Interest</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="export_detections" checked>
+                        <label for="export_detections">Change Detections</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="export_analytics" checked>
+                        <label for="export_analytics">Analytics Data</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="export_alerts" checked>
+                        <label for="export_alerts">Alert History</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="export_reports">
+                        <label for="export_reports">Generated Reports</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="export_imagery">
+                        <label for="export_imagery">Satellite Imagery</label>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-export" style="max-width: 300px;" onclick="performBulkExport()">
+                📦 Start Bulk Export
+            </button>
+        </div>
+
+        <div class="info-box">
+            <h3>💡 Export Tips & Information</h3>
+            <ul>
+                <li>CSV files can be opened in Excel, Google Sheets, or any spreadsheet application</li>
+                <li>GeoJSON files are compatible with QGIS, ArcGIS, and web mapping libraries</li>
+                <li>PDF reports include charts, maps, and comprehensive analysis</li>
+                <li>Image archives contain georeferenced satellite imagery</li>
+                <li>Bulk exports are compressed automatically for large datasets</li>
+                <li>All exports include metadata for easy data interpretation</li>
+                <li>Coordinate system: WGS84 (EPSG:4326) for geographical data</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <div id="notificationContent"></div>
+    </div>
+
+    <script>
+        let db;
+        let currentUserId;
+        let selectedQuickAOI = null;
+        let selectedBulkAOI = null;
+        const DB_NAME = 'ChangeSentinelDB';
+        const DB_VERSION = 2;
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => {
+                    console.error('Database error:', request.error);
+                    reject(request.error);
+                };
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    console.log('Database opened successfully, version:', db.version);
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    console.log('Database upgrade triggered, version:', event.newVersion);
+                    
+                    if (!db.objectStoreNames.contains('aois')) {
+                        const aoiStore = db.createObjectStore('aois', { keyPath: 'id', autoIncrement: true });
+                        aoiStore.createIndex('userId', 'userId', { unique: false });
+                        console.log('Created aois store');
+                    }
+                    if (!db.objectStoreNames.contains('alerts')) {
+                        const alertStore = db.createObjectStore('alerts', { keyPath: 'id', autoIncrement: true });
+                        alertStore.createIndex('userId', 'userId', { unique: false });
+                        console.log('Created alerts store');
+                    }
+                };
+            });
+        }
+
+        async function initialize() {
+            console.log('Starting initialization...');
+            
+            const sessionData = sessionStorage.getItem('loggedInUser');
+            if (!sessionData) {
+                console.log('No user session found, redirecting to login');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+            currentUserId = user.id;
+            console.log('Current user ID:', currentUserId);
+
+            try {
+                await initDB();
+                console.log('Database initialized, loading AOIs...');
+                await loadAOIs();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                updateDropdowns('<option value="">Error loading AOIs - Please refresh</option>');
+            }
+        }
+
+        async function loadAOIs() {
+            try {
+                if (!db) {
+                    console.error('Database not initialized');
+                    updateDropdowns('<option value="">Database not ready</option>');
+                    return;
+                }
+
+                console.log('Loading AOIs for user:', currentUserId);
+                
+                const transaction = db.transaction(['aois'], 'readonly');
+                const store = transaction.objectStore('aois');
+                const index = store.index('userId');
+                
+                const aois = await new Promise((resolve, reject) => {
+                    const request = index.getAll(currentUserId);
+                    request.onsuccess = () => {
+                        console.log('AOIs loaded successfully:', request.result);
+                        resolve(request.result || []);
+                    };
+                    request.onerror = () => {
+                        console.error('Error loading AOIs:', request.error);
+                        reject(request.error);
+                    };
+                });
+
+                console.log('Total AOIs found:', aois.length);
+
+                const quickSelect = document.getElementById('quickExportAOI');
+                const bulkSelect = document.getElementById('bulkAOISelect');
+                
+                if (aois.length === 0) {
+                    console.log('No AOIs available for this user');
+                    const noAOIOption = '<option value="">No AOIs available - Create one first</option>';
+                    quickSelect.innerHTML = noAOIOption;
+                    bulkSelect.innerHTML = noAOIOption;
+                } else {
+                    console.log('Populating dropdowns with', aois.length, 'AOIs');
+                    
+                    // Update quick export dropdown
+                    quickSelect.innerHTML = '<option value="">-- All Areas --</option>';
+                    aois.forEach(aoi => {
+                        const option = document.createElement('option');
+                        option.value = aoi.id;
+                        option.textContent = `${aoi.name} (${aoi.area} km²)`;
+                        option.dataset.aoi = JSON.stringify(aoi);
+                        quickSelect.appendChild(option);
+                    });
+
+                    // Update bulk export dropdown
+                    bulkSelect.innerHTML = '<option value="">-- All Areas --</option>';
+                    aois.forEach(aoi => {
+                        const option = document.createElement('option');
+                        option.value = aoi.id;
+                        option.textContent = `${aoi.name} (${aoi.area} km²)`;
+                        option.dataset.aoi = JSON.stringify(aoi);
+                        bulkSelect.appendChild(option);
+                    });
+                    
+                    console.log('Dropdowns populated successfully');
+                }
+
+                // Set up event listeners
+                quickSelect.addEventListener('change', function() {
+                    if (this.value && this.selectedOptions[0].dataset.aoi) {
+                        selectedQuickAOI = JSON.parse(this.selectedOptions[0].dataset.aoi);
+                        console.log('Quick AOI selected:', selectedQuickAOI.name);
+                    } else {
+                        selectedQuickAOI = null;
+                        console.log('Quick AOI: All areas selected');
+                    }
+                });
+
+                bulkSelect.addEventListener('change', function() {
+                    if (this.value && this.selectedOptions[0].dataset.aoi) {
+                        selectedBulkAOI = JSON.parse(this.selectedOptions[0].dataset.aoi);
+                        console.log('Bulk AOI selected:', selectedBulkAOI.name);
+                    } else {
+                        selectedBulkAOI = null;
+                        console.log('Bulk AOI: All areas selected');
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error in loadAOIs:', error);
+                updateDropdowns('<option value="">Error loading AOIs - Please refresh</option>');
+            }
+        }
+
+        function updateDropdowns(html) {
+            document.getElementById('quickExportAOI').innerHTML = html;
+            document.getElementById('bulkAOISelect').innerHTML = html;
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        async function exportCSV() {
+            const aoiToUse = selectedQuickAOI;
+            showNotification('Preparing CSV export...');
+            
+            setTimeout(() => {
+                const aoiFilter = aoiToUse ? ` for ${aoiToUse.name}` : ' for All Areas';
+                const csvContent = `Date,AOI Name,Forest Coverage,Urban Area,Water Bodies,Vegetation Index,Status
+2024-01-15,${aoiToUse ? aoiToUse.name : 'Forest Area Chennai'},68.5,18.3,5,0.72,Active
+2024-02-15,${aoiToUse ? aoiToUse.name : 'Forest Area Chennai'},67.8,18.9,5,0.71,Active
+2024-03-15,${aoiToUse ? aoiToUse.name : 'Forest Area Chennai'},66.2,19.5,4,0.69,Alert
+2024-04-15,${aoiToUse ? aoiToUse.name : 'Forest Area Chennai'},65.1,20.2,4,0.68,Alert
+2024-05-15,${aoiToUse ? aoiToUse.name : 'Urban Development Zone'},45.3,35.7,3,0.54,Active
+2024-06-15,${aoiToUse ? aoiToUse.name : 'Coastal Monitoring Area'},78.9,12.4,8,0.81,Active`;
+
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `ChangeSentinel_Export${aoiFilter.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showNotification('✅ PDF report downloaded successfully!');
+            }, 1500);
+        }
+
+        function exportImages() {
+            const aoiToUse = selectedQuickAOI;
+            showNotification('Preparing image archive...');
+            
+            setTimeout(() => {
+                const aoiName = aoiToUse ? aoiToUse.name : 'All Areas';
+                alert(`🖼️ Image Archive\n\nSatellite imagery archive for ${aoiName} would be prepared here.\n\nIn a production environment, this would download:\n• High-resolution satellite images\n• Change detection visualizations\n• Georeferenced rasters\n• Metadata files\n\nFormat: ZIP archive with organized folders`);
+                showNotification('✅ Image export completed!');
+            }, 1000);
+        }
+
+        function performBulkExport() {
+            const aoiToUse = selectedBulkAOI;
+            const format = document.getElementById('bulkFormat').value;
+            const dateRange = document.getElementById('dateRange').value;
+            const compression = document.getElementById('compression').value;
+
+            const selectedTypes = [];
+            if (document.getElementById('export_aois').checked) selectedTypes.push('AOIs');
+            if (document.getElementById('export_detections').checked) selectedTypes.push('Detections');
+            if (document.getElementById('export_analytics').checked) selectedTypes.push('Analytics');
+            if (document.getElementById('export_alerts').checked) selectedTypes.push('Alerts');
+            if (document.getElementById('export_reports').checked) selectedTypes.push('Reports');
+            if (document.getElementById('export_imagery').checked) selectedTypes.push('Imagery');
+
+            if (selectedTypes.length === 0) {
+                alert('Please select at least one data type to export');
+                return;
+            }
+
+            const aoiText = aoiToUse ? ` for ${aoiToUse.name}` : ' for All Areas';
+            showNotification('📦 Preparing bulk export...');
+
+            setTimeout(() => {
+                const bulkData = {
+                    exportDate: new Date().toISOString(),
+                    aoiFilter: aoiToUse ? aoiToUse.name : 'All Areas',
+                    format: format,
+                    dateRange: dateRange,
+                    compression: compression,
+                    dataTypes: selectedTypes,
+                    totalRecords: 156,
+                    fileSize: '2.4 MB'
+                };
+
+                const content = `ChangeSentinel Bulk Export
+Date: ${bulkData.exportDate}
+AOI: ${bulkData.aoiFilter}
+Format: ${bulkData.format}
+Date Range: ${dateRange === 'all' ? 'All Time' : 'Last ' + dateRange + ' days'}
+Compression: ${compression}
+
+Included Data Types:
+${selectedTypes.map(t => '• ' + t).join('\n')}
+
+Total Records: ${bulkData.totalRecords}
+Estimated Size: ${bulkData.fileSize}
+
+This is a sample bulk export file.
+In production, this would contain all your selected data.`;
+
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `ChangeSentinel_BulkExport${aoiText.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.${format === 'zip' ? 'zip' : format}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showNotification('✅ Bulk export completed successfully!');
+            }, 2000);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>
+<script>
+showNotification('✅ CSV file downloaded successfully!');
+            }, 1000);
+        }
+
+        function exportGeoJSON() {
+            const aoiToUse = selectedQuickAOI;
+            showNotification('Preparing GeoJSON export...');
+            
+            setTimeout(() => {
+                const aoiName = aoiToUse ? aoiToUse.name : 'Forest Area Chennai';
+                const geoJSON = {
+                    "type": "FeatureCollection",
+                    "features": [
+                        {
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Polygon",
+                                "coordinates": aoiToUse && aoiToUse.coordinates ? aoiToUse.coordinates : [[[80.2, 13.0], [80.3, 13.0], [80.3, 13.1], [80.2, 13.1], [80.2, 13.0]]]
+                            },
+                            "properties": {
+                                "name": aoiName,
+                                "area": aoiToUse ? aoiToUse.area : 45.6,
+                                "forestCoverage": 68.5,
+                                "lastUpdated": new Date().toISOString()
+                            }
+                        }
+                    ]
+                };
+
+                const blob = new Blob([JSON.stringify(geoJSON, null, 2)], { type: 'application/geo+json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `ChangeSentinel_GeoData_${aoiName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.geojson`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showNotification('✅ GeoJSON file downloaded successfully!');
+            }, 1000);
+        }
+
+        function exportPDF() {
+            const aoiToUse = selectedQuickAOI;
+            showNotification('Generating PDF report...');
+            
+            setTimeout(() => {
+                const aoiName = aoiToUse ? aoiToUse.name : 'All Monitored Areas';
+                const pdfContent = `ChangeSentinel Monitoring Report
+Generated: ${new Date().toLocaleString()}
+AOI: ${aoiName}
+
+EXECUTIVE SUMMARY
+-----------------
+This comprehensive report provides detailed analysis of ${aoiName}
+with AI-powered change detection results.
+
+KEY FINDINGS
+------------
+• Total Areas Monitored: ${aoiToUse ? '1' : '3'}
+• Active Alerts: 2
+• Changes Detected: 23
+• Overall Health Score: 7.2/10
+
+AREA ANALYSIS
+-------------
+${aoiToUse ? `
+${aoiToUse.name} (${aoiToUse.area} km²)
+- Forest Coverage: 68.5%
+- Recent Changes: -3.2% forest loss
+- Status: ${aoiToUse.status || 'Active'}
+- Description: ${aoiToUse.description || 'N/A'}
+` : `
+1. Forest Area Chennai (45.6 km²)
+   - Forest Coverage: 68.5%
+   - Recent Changes: -3.2% forest loss
+   - Status: Alert
+
+2. Urban Development Zone (32.4 km²)
+   - Urbanization: 35.7%
+   - Recent Changes: +2.1% urban growth
+   - Status: Active
+
+3. Coastal Monitoring Area (78.9 km²)
+   - Vegetation Index: 0.81
+   - Recent Changes: Stable
+   - Status: Active
+`}
+
+RECOMMENDATIONS
+---------------
+1. Implement conservation measures in high-risk zones
+2. Continue monitoring at current frequency
+3. Engage local stakeholders in protection efforts
+
+---
+Report generated by ChangeSentinel
+© 2024 ChangeSentinel. All rights reserved.`;
+
+                const blob = new Blob([pdfContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `ChangeSentinel_Report_${aoiName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+</script>

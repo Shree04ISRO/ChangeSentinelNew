@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ChangeSentinel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .user-email {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .btn-logout {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+            padding: 30px 0;
+            position: sticky;
+            top: 70px;
+            height: calc(100vh - 70px);
+            overflow-y: auto;
+            border-right: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        .menu-section {
+            margin-bottom: 30px;
+        }
+
+        .menu-title {
+            padding: 0 25px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: white;
+            border-left-color: #667eea;
+        }
+
+        .menu-item.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border-left-color: #667eea;
+            font-weight: 600;
+        }
+
+        .menu-icon {
+            font-size: 1.4rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu-text {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 25px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .action-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .action-title {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .action-desc {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .aoi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .aoi-card {
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .aoi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+
+        .aoi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .aoi-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .aoi-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .aoi-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .aoi-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .aoi-stat-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .aoi-stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .aoi-stat-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 3px;
+        }
+
+        .aoi-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .aoi-date {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .aoi-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            border: none;
+        }
+
+        .btn-icon:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: scale(1.1);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .empty-state-text {
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-item {
+            padding: 20px;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @media (max-width: 968px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-section">
+            <span class="logo">🛰️</span>
+            <span class="brand-name">ChangeSentinel</span>
+        </div>
+        <div class="user-section">
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-email" id="userEmail">Loading...</div>
+            </div>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="menu-section">
+                <div class="menu-title">Main</div>
+                <a class="menu-item active" data-page="dashboard">
+                    <span class="menu-icon">🏠</span>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+                <a class="menu-item" data-page="map">
+                    <span class="menu-icon">🗺️</span>
+                    <span class="menu-text">Interactive Map</span>
+                    <span class="badge">New</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-title">Monitoring</div>
+                <a class="menu-item" data-page="areas">
+                    <span class="menu-icon">📍</span>
+                    <span class="menu-text">Areas of Interest</span>
+                </a>
+                <a class="menu-item" data-page="detections">
+                    <span class="menu-icon">🔍</span>
+                    <span class="menu-text">Change Detection</span>
+                </a>
+                <a class="menu-item" data-page="analytics">
+                    <span class="menu-icon">📊</span>
+                    <span class="menu-text">Analytics</span>
+                </a>
+                <a class="menu-item" data-page="predictions">
+                    <span class="menu-icon">🔮</span>
+                    <span class="menu-text">Predictions</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-title">Alerts & Reports</div>
+                <a class="menu-item" data-page="alerts">
+                    <span class="menu-icon">🔔</span>
+                    <span class="menu-text">Alert System</span>
+                </a>
+                <a class="menu-item" data-page="reports">
+                    <span class="menu-icon">📄</span>
+                    <span class="menu-text">Reports</span>
+                </a>
+                <a class="menu-item" data-page="export">
+                    <span class="menu-icon">📥</span>
+                    <span class="menu-text">Export Data</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-title">Account</div>
+                <a class="menu-item" data-page="settings">
+                    <span class="menu-icon">⚙️</span>
+                    <span class="menu-text">Settings</span>
+                </a>
+                <a class="menu-item" data-page="subscription">
+                    <span class="menu-icon">💳</span>
+                    <span class="menu-text">Subscription</span>
+                </a>
+                <a class="menu-item" data-page="help">
+                    <span class="menu-icon">❓</span>
+                    <span class="menu-text">Help & Support</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <!-- Dashboard Page -->
+            <section id="dashboard" class="page-section active">
+                <div class="page-header">
+                    <h1 class="page-title">Welcome back, <span id="welcomeName">User</span>! 👋</h1>
+                    <p class="page-subtitle">Here's what's happening with your monitoring system today</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-value" id="statAreas">0</div>
+                        <div class="stat-label">Monitored Areas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔍</div>
+                        <div class="stat-value" id="statDetections">0</div>
+                        <div class="stat-label">Detections</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-value" id="statAlerts">0</div>
+                        <div class="stat-label">Active Alerts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value">Pro</div>
+                        <div class="stat-label">Subscription</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Quick Actions</h2>
+                    </div>
+                    <div class="action-grid">
+                        <div class="action-card" onclick="navigateTo('map')">
+                            <div class="action-icon">🗺️</div>
+                            <div class="action-title">Create AOI</div>
+                            <div class="action-desc">Define a new area to monitor</div>
+                        </div>
+                        <div class="action-card" onclick="navigateTo('analytics')">
+                            <div class="action-icon">📊</div>
+                            <div class="action-title">View Analytics</div>
+                            <div class="action-desc">Analyze detection trends</div>
+                        </div>
+                        <div class="action-card" onclick="navigateTo('alerts')">
+                            <div class="action-icon">🔔</div>
+                            <div class="action-title">Set Alert</div>
+                            <div class="action-desc">Configure notifications</div>
+                        </div>
+                        <div class="action-card" onclick="navigateTo('export')">
+                            <div class="action-icon">📥</div>
+                            <div class="action-title">Export Data</div>
+                            <div class="action-desc">Download reports</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Areas of Interest</h2>
+                        <a href="#" onclick="navigateTo('areas'); return false;" class="btn-primary">View All</a>
+                    </div>
+                    <div id="recentAOIs"></div>
+                </div>
+            </section>
+
+            <!-- Areas of Interest Page -->
+            <section id="areas" class="page-section">
+                <div class="page-header">
+                    <h1 class="page-title">Areas of Interest 📍</h1>
+                    <p class="page-subtitle">Manage your monitored locations</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Your Monitored Areas</h2>
+                        <a href="map.html" class="btn-primary">+ Create New AOI</a>
+                    </div>
+                    <div id="allAOIs"></div>
+                </div>
+            </section>
+
+            <!-- Other internal pages remain as placeholders -->
+            <section id="detections" class="page-section">
+                <div class="page-header">
+                    <h1 class="page-title">Change Detection 🔍</h1>
+                    <p class="page-subtitle">AI-powered environmental change analysis</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Detection Results</h2>
+                        <a href="detection.html" class="btn-primary">Run New Detection</a>
+                    </div>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-title">No Detections Yet</div>
+                        <p class="empty-state-text">Create an area of interest to start detecting changes</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="settings" class="page-section">
+                <div class="page-header">
+                    <h1 class="page-title">Settings ⚙️</h1>
+                    <p class="page-subtitle">Manage your account preferences</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Account Settings</h2>
+                    </div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-icon-box">👤</div>
+                            <div class="feature-content">
+                                <div class="feature-title">Profile Information</div>
+                                <div class="feature-desc">Update your name, email, and organization</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-box">🔒</div>
+                            <div class="feature-content">
+                                <div class="feature-title">Security</div>
+                                <div class="feature-desc">Change password and enable two-factor authentication</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="subscription" class="page-section">
+                <div class="page-header">
+                    <h1 class="page-title">Subscription 💳</h1>
+                    <p class="page-subtitle">Manage your plan and billing</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Current Plan: Pro</h2>
+                    </div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-icon-box">✅</div>
+                            <div class="feature-content">
+                                <div class="feature-title">Unlimited Areas</div>
+                                <div class="feature-desc">Monitor as many locations as you need</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="help" class="page-section">
+                <div class="page-header">
+                    <h1 class="page-title">Help & Support ❓</h1>
+                    <p class="page-subtitle">Get assistance and learn more</p>
+                </div>
+                <div class="action-grid">
+                    <div class="action-card">
+                        <div class="action-icon">📚</div>
+                        <div class="action-title">Documentation</div>
+                        <div class="action-desc">Browse user guides and tutorials</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-icon">💬</div>
+                        <div class="action-title">Contact Support</div>
+                        <div class="action-desc">Get help from our team</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let db;
+        const DB_NAME = 'ChangeSentinelDB';
+        let currentUserId;
+        let refreshInterval;
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 2);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains('aois')) {
+                        const aoiStore = db.createObjectStore('aois', { keyPath: 'id', autoIncrement: true });
+                        aoiStore.createIndex('userId', 'userId', { unique: false });
+                    }
+                    if (!db.objectStoreNames.contains('alerts')) {
+                        const alertStore = db.createObjectStore('alerts', { keyPath: 'id', autoIncrement: true });
+                        alertStore.createIndex('userId', 'userId', { unique: false });
+                    }
+                };
+            });
+        }
+
+        // Check if user is logged in
+        const sessionData = sessionStorage.getItem('loggedInUser');
+        
+        if (!sessionData) {
+            window.location.href = 'login.html';
+        } else {
+            const user = JSON.parse(sessionData);
+            currentUserId = user.id;
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('welcomeName').textContent = user.name.split(' ')[0];
+
+            // Load data after DB is ready
+            initDB().then(() => {
+                loadDashboardData(currentUserId);
+                // Set up periodic refresh every 5 seconds
+                refreshInterval = setInterval(() => loadDashboardData(currentUserId), 5000);
+            }).catch(() => {
+                displayRecentAOIs([]);
+                displayAllAOIs([]);
+            });
+        }
+
+        // Load all dashboard data
+        async function loadDashboardData(userId) {
+            try {
+                const aois = await loadAOIs(userId);
+                const alerts = await loadAlerts(userId);
+                
+                updateStatistics(aois, alerts);
+                displayRecentAOIs(aois);
+                displayAllAOIs(aois);
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load all AOIs for the user
+        async function loadAOIs(userId) {
+            try {
+                const transaction = db.transaction(['aois'], 'readonly');
+                const store = transaction.objectStore('aois');
+                const index = store.index('userId');
+                
+                const aois = await new Promise((resolve) => {
+                    const request = index.getAll(userId);
+                    request.onsuccess = () => resolve(request.result || []);
+                });
+
+                return aois;
+            } catch (error) {
+                console.error('Error loading AOIs:', error);
+                return [];
+            }
+        }
+
+        // Load all alerts for the user
+        async function loadAlerts(userId) {
+            try {
+                const transaction = db.transaction(['alerts'], 'readonly');
+                const store = transaction.objectStore('alerts');
+                const index = store.index('userId');
+                
+                const alerts = await new Promise((resolve) => {
+                    const request = index.getAll(userId);
+                    request.onsuccess = () => resolve(request.result || []);
+                });
+                
+                return alerts.filter(alert => alert.active);
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+                return [];
+            }
+        }
+
+        // Update statistics
+        function updateStatistics(aois, alerts) {
+            document.getElementById('statAreas').textContent = aois.length;
+            
+            let totalDetections = 0;
+            aois.forEach(aoi => {
+                totalDetections += aoi.detections || 0;
+            });
+            document.getElementById('statDetections').textContent = totalDetections;
+            
+            document.getElementById('statAlerts').textContent = alerts.length;
+        }
+
+        function displayRecentAOIs(aois) {
+            const container = document.getElementById('recentAOIs');
+            const recentAOIs = aois.slice(-3).reverse();
+
+            if (recentAOIs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📍</div>
+                        <div class="empty-state-title">No Areas Created Yet</div>
+                        <p class="empty-state-text">Start by creating your first area of interest on the map</p>
+                        <a href="map.html" class="btn-primary">Create First AOI</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '<div class="aoi-grid">' + recentAOIs.map(aoi => `
+                <div class="aoi-card" onclick="viewAOI(${aoi.id})">
+                    <div class="aoi-header">
+                        <div>
+                            <div class="aoi-title">${aoi.name}</div>
+                        </div>
+                        <div class="aoi-status">${aoi.status || 'Active'}</div>
+                    </div>
+                    <div class="aoi-description">${aoi.description || 'No description'}</div>
+                    <div class="aoi-stats">
+                        <div class="aoi-stat-item">
+                            <div class="aoi-stat-value">${aoi.area || '0'}</div>
+                            <div class="aoi-stat-label">km²</div>
+                        </div>
+                        <div class="aoi-stat-item">
+                            <div class="aoi-stat-value">${aoi.detections || 0}</div>
+                            <div class="aoi-stat-label">Detections</div>
+                        </div>
+                        <div class="aoi-stat-item">
+                            <div class="aoi-stat-value">${aoi.alerts || 0}</div>
+                            <div class="aoi-stat-label">Alerts</div>
+                        </div>
+                    </div>
+                    <div class="aoi-footer">
+                        <div class="aoi-date">Created: ${new Date(aoi.createdAt).toLocaleDateString()}</div>
+                        <div class="aoi-actions">
+                            <button class="btn-icon" onclick="event.stopPropagation(); viewOnMap(${aoi.id})" title="View on Map">🗺️</button>
+                            <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteAOI(${aoi.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') + '</div>';
+        }
+
+        function displayAllAOIs(aois) {
+            const container = document.getElementById('allAOIs');
+
+            if (aois.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📍</div>
+                        <div class="empty-state-title">No Areas Created Yet</div>
+                        <p class="empty-state-text">Start by creating your first area of interest on the map</p>
+                        <a href="map.html" class="btn-primary">Create First AOI</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const sortedAOIs = [...aois].reverse();
+            container.innerHTML = '<div class="aoi-grid">' + sortedAOIs.map(aoi => `
+                <div class="aoi-card" onclick="viewAOI(${aoi.id})">
+                    <div class="aoi-header">
+                        <div>
+                            <div class="aoi-title">${aoi.name}</div>
+                        </div>
+                        <div class="aoi-status">${aoi.status || 'Active'}</div>
+                    </div>
+                    <div class="aoi-description">${aoi.description || 'No description'}</div>
+                    <div class="aoi-stats">
+                        <div class="aoi-stat-item">
+                            <div class="aoi-stat-value">${aoi.area || '0'}</div>
+                            <div class="aoi-stat-label">km²</div>
+                        </div>
+                        <div class="aoi-stat-item">
+                            <div class="aoi-stat-value">${aoi.detections || 0}</div>
+                            <div class="aoi-stat-label">Detections</div>
+                        </div>
+                        <div class="aoi-stat-item">
+                            <div class="aoi-stat-value">${aoi.alerts || 0}</div>
+                            <div class="aoi-stat-label">Alerts</div>
+                        </div>
+                    </div>
+                    <div class="aoi-footer">
+                        <div class="aoi-date">Created: ${new Date(aoi.createdAt).toLocaleDateString()}</div>
+                        <div class="aoi-actions">
+                            <button class="btn-icon" onclick="event.stopPropagation(); viewOnMap(${aoi.id})" title="View on Map">🗺️</button>
+                            <button class="btn-icon btn-delete" onclick="event.stopPropagation(); deleteAOI(${aoi.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') + '</div>';
+        }
+
+        function viewAOI(aoiId) {
+            sessionStorage.setItem('viewAOI', aoiId);
+            window.location.href = 'map.html';
+        }
+
+        function viewOnMap(aoiId) {
+            sessionStorage.setItem('viewAOI', aoiId);
+            window.location.href = 'map.html';
+        }
+
+        async function deleteAOI(aoiId) {
+            if (!confirm('Are you sure you want to delete this AOI?')) return;
+
+            try {
+                const transaction = db.transaction(['aois'], 'readwrite');
+                const store = transaction.objectStore('aois');
+                
+                await new Promise((resolve, reject) => {
+                    const request = store.delete(aoiId);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+
+                loadDashboardData(currentUserId);
+                alert('AOI deleted successfully!');
+            } catch (error) {
+                console.error('Error deleting AOI:', error);
+                alert('Failed to delete AOI');
+            }
+        }
+
+        // Navigation functionality
+        function navigateTo(page) {
+            // External pages - navigate to separate HTML files
+            const externalPages = {
+                'analytics': 'Analytics.html',
+                'predictions': 'Prediction page.html',
+                'alerts': 'Alert.html',
+                'export': 'export.html',
+                'reports': 'Reports.html',
+                'map': 'map.html',
+                'detections': 'detection.html',
+                'settings': 'Settings.html',
+                'subscription': 'Subscription.html',
+                'help': 'Help and Support.html'
+            };
+
+            if (externalPages[page]) {
+                window.location.href = externalPages[page];
+                return;
+            }
+
+            // Internal pages - toggle visibility within dashboard
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const targetSection = document.getElementById(page);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            const activeMenuItem = document.querySelector(`[data-page="${page}"]`);
+            if (activeMenuItem) {
+                activeMenuItem.classList.add('active');
+            }
+            
+            document.querySelector('.content-area').scrollTop = 0;
+        }
+
+        // Add click listeners to menu items
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const page = this.getAttribute('data-page');
+                navigateTo(page);
+            });
+        });
+
+      function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        clearInterval(refreshInterval);
+        
+        // Close database connection
+        if (db) {
+            db.close();
+            db = null;
+        }
+        
+        // Clear session
+        sessionStorage.clear();
+        
+        // Small delay to ensure DB is closed
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 100);
+    }
+}
+
+    </script>
+</body>
+</html>

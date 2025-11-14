@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - ChangeSentinel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+        }
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        .section-title {
+            color: #374151;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-icon {
+            font-size: 1.5rem;
+        }
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .alert.show { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+        .alert-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .alert-info { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .input-hint {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .toggle-info h3 {
+            color: #374151;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .toggle-info p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #d1d5db;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .toggle.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        .toggle.active .toggle-slider {
+            transform: translateX(30px);
+        }
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #d1d5db;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .info-box {
+            background: #f0f9ff;
+            border: 2px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .info-box p {
+            color: #1e40af;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="Dashboard.html" class="back-link">← Back to Dashboard</a>
+
+        <div class="header">
+            <h1>⚙️ Account Settings</h1>
+            <p>Manage your security and preferences</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <!-- Security Section -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-icon">🔒</span>
+                Security Settings
+            </div>
+
+            <div class="toggle-container">
+                <div class="toggle-info">
+                    <h3>Two-Factor Authentication (2FA)</h3>
+                    <p>Add an extra layer of security to your account</p>
+                    <span class="status-badge" id="twoFAStatus">Status: Checking...</span>
+                </div>
+                <div class="toggle" id="twoFAToggle" onclick="toggle2FA()">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+
+            <div id="phoneSection" style="display: none;">
+                <div class="form-group">
+                    <label for="phoneNumber">📱 Phone Number for SMS</label>
+                    <input type="tel" id="phoneNumber" placeholder="+1234567890">
+                    <p class="input-hint">Include country code (e.g., +1 for USA)</p>
+                </div>
+                <button class="btn" onclick="updatePhone()" id="updatePhoneBtn">Update Phone Number</button>
+            </div>
+
+            <div class="info-box" id="twoFAInfo" style="display: none;">
+                <p><strong>✅ 2FA is Active</strong><br>
+                Your account is protected with SMS verification. You'll receive a code when logging in from new devices.</p>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-icon">👤</span>
+                Profile Information
+            </div>
+
+            <div class="form-group">
+                <label for="displayName">Full Name</label>
+                <input type="text" id="displayName" placeholder="John Doe">
+            </div>
+
+            <div class="form-group">
+                <label for="displayEmail">Email Address</label>
+                <input type="email" id="displayEmail" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="displayOrganization">Organization</label>
+                <input type="text" id="displayOrganization" placeholder="Your Company">
+            </div>
+
+            <button class="btn" onclick="updateProfile()" id="updateProfileBtn">Save Changes</button>
+        </div>
+
+        <!-- Test SMS Section -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-icon">🧪</span>
+                Test SMS Service
+            </div>
+
+            <p style="color: #6b7280; margin-bottom: 15px;">
+                Send a test SMS to verify your phone number is working correctly.
+            </p>
+
+            <button class="btn btn-secondary" onclick="sendTestSMS()" id="testSMSBtn">
+                📱 Send Test SMS
+            </button>
+
+            <div class="info-box" style="margin-top: 15px;">
+                <p>
+                    <strong>Note:</strong> With Twilio's free trial, you can only send SMS to verified phone numbers. 
+                    Make sure your phone is verified in your Twilio console.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DB_NAME = 'ChangeSentinelDB';
+        const DB_VERSION = 2;
+        let db = null;
+        let currentUser = null;
+
+        // API endpoint configuration
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8888/.netlify/functions'
+            : '/.netlify/functions';
+
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+            });
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type} show`;
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        async function loadUserSettings() {
+            const session = sessionStorage.getItem('loggedInUser');
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(session);
+
+            // Load user profile
+            await initDB();
+            const transaction = db.transaction(['users'], 'readonly');
+            const store = transaction.objectStore('users');
+            
+            const user = await new Promise((resolve) => {
+                const request = store.get(currentUser.id);
+                request.onsuccess = () => resolve(request.result);
+            });
+
+            if (user) {
+                document.getElementById('displayName').value = user.name;
+                document.getElementById('displayEmail').value = user.email;
+                document.getElementById('displayOrganization').value = user.organization;
+                document.getElementById('phoneNumber').value = user.phone || '';
+            }
+
+            // Load 2FA settings
+            const twoFASettings = JSON.parse(localStorage.getItem(`2fa_${currentUser.email}`)) || {
+                enabled: false,
+                phone: user.phone || ''
+            };
+
+            updateUIState(twoFASettings);
+        }
+
+        function updateUIState(settings) {
+            const toggle = document.getElementById('twoFAToggle');
+            const status = document.getElementById('twoFAStatus');
+            const phoneSection = document.getElementById('phoneSection');
+            const infoBox = document.getElementById('twoFAInfo');
+
+            if (settings.enabled) {
+                toggle.classList.add('active');
+                status.textContent = 'Status: Active';
+                status.className = 'status-badge status-active';
+                phoneSection.style.display = 'block';
+                infoBox.style.display = 'block';
+            } else {
+                toggle.classList.remove('active');
+                status.textContent = 'Status: Inactive';
+                status.className = 'status-badge status-inactive';
+                phoneSection.style.display = 'none';
+                infoBox.style.display = 'none';
+            }
+        }
+
+        function toggle2FA() {
+            const toggle = document.getElementById('twoFAToggle');
+            const isEnabled = toggle.classList.contains('active');
+
+            const twoFASettings = JSON.parse(localStorage.getItem(`2fa_${currentUser.email}`)) || {};
+            twoFASettings.enabled = !isEnabled;
+
+            localStorage.setItem(`2fa_${currentUser.email}`, JSON.stringify(twoFASettings));
+            updateUIState(twoFASettings);
+
+            if (twoFASettings.enabled) {
+                showAlert('✅ 2FA enabled! Please update your phone number.', 'success');
+            } else {
+                showAlert('⚠️ 2FA disabled. Your account is less secure.', 'info');
+            }
+        }
+
+        async function updatePhone() {
+            const phoneInput = document.getElementById('phoneNumber');
+            const phone = phoneInput.value.trim();
+            const btn = document.getElementById('updatePhoneBtn');
+
+            if (!phone.startsWith('+')) {
+                showAlert('❌ Phone must include country code (e.g., +1234567890)', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+
+            try {
+                // Update in IndexedDB
+                const transaction = db.transaction(['users'], 'readwrite');
+                const store = transaction.objectStore('users');
+                
+                const user = await new Promise((resolve) => {
+                    const request = store.get(currentUser.id);
+                    request.onsuccess = () => resolve(request.result);
+                });
+
+                user.phone = phone;
+
+                await new Promise((resolve, reject) => {
+                    const request = store.put(user);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+
+                // Update 2FA settings
+                const twoFASettings = JSON.parse(localStorage.getItem(`2fa_${currentUser.email}`)) || {};
+                twoFASettings.phone = phone;
+                localStorage.setItem(`2fa_${currentUser.email}`, JSON.stringify(twoFASettings));
+
+                showAlert('✅ Phone number updated successfully!', 'success');
+
+            } catch (error) {
+                console.error('Update error:', error);
+                showAlert('❌ Failed to update phone number', 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Update Phone Number';
+        }
+
+        async function updateProfile() {
+            const name = document.getElementById('displayName').value.trim();
+            const organization = document.getElementById('displayOrganization').value.trim();
+            const btn = document.getElementById('updateProfileBtn');
+
+            if (!name || !organization) {
+                showAlert('❌ Please fill in all fields', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                const transaction = db.transaction(['users'], 'readwrite');
+                const store = transaction.objectStore('users');
+                
+                const user = await new Promise((resolve) => {
+                    const request = store.get(currentUser.id);
+                    request.onsuccess = () => resolve(request.result);
+                });
+
+                user.name = name;
+                user.organization = organization;
+
+                await new Promise((resolve, reject) => {
+                    const request = store.put(user);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+
+                // Update session
+                currentUser.name = name;
+                currentUser.organization = organization;
+                sessionStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+
+                showAlert('✅ Profile updated successfully!', 'success');
+
+            } catch (error) {
+                console.error('Update error:', error);
+                showAlert('❌ Failed to update profile', 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Save Changes';
+        }
+
+        async function sendTestSMS() {
+            const phone = document.getElementById('phoneNumber').value.trim();
+            const btn = document.getElementById('testSMSBtn');
+
+            if (!phone || !phone.startsWith('+')) {
+                showAlert('❌ Please enter a valid phone number with country code', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                const response = await fetch(`${API_BASE}/send-sms`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phoneNumber: phone })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to send SMS');
+                }
+
+                showAlert('✅ Test SMS sent! Check your phone.', 'success');
+                console.log('SMS sent:', data.messageSid);
+
+            } catch (error) {
+                console.error('SMS Error:', error);
+                showAlert(`❌ Failed to send SMS: ${error.message}`, 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = '📱 Send Test SMS';
+        }
+
+        window.addEventListener('load', loadUserSettings);
+    </script>
+</body>
+</html>

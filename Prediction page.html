@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictions - ChangeSentinel</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back {
+            padding: 10px 25px;
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .control-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-select {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-select option {
+            background: #1e293b;
+        }
+
+        .btn-primary {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .aoi-info {
+            background: rgba(102, 126, 234, 0.15);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .predictions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .prediction-card {
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .prediction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+
+        .prediction-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .prediction-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .prediction-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .prediction-period {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .prediction-confidence {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .confidence-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 4px;
+        }
+
+        .confidence-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .recommendations-section {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .recommendation-item {
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+        }
+
+        .recommendation-item.priority-high {
+            border-color: #ef4444;
+        }
+
+        .recommendation-item.priority-medium {
+            border-color: #f59e0b;
+        }
+
+        .recommendation-item.priority-low {
+            border-color: #10b981;
+        }
+
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .priority-badge {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .priority-low {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .recommendation-text {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .action-items {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .action-item {
+            padding: 8px 0;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .action-item::before {
+            content: "✓ ";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+        }
+
+        .chart-card {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .chart-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .chart-wrapper {
+            height: 350px;
+            position: relative;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 968px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-section">
+            <span style="font-size: 1.8rem;">🛰️</span>
+            <span class="brand-name">ChangeSentinel</span>
+        </div>
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Predictive Analytics 🔮</h1>
+            <p class="page-subtitle">AI-powered forecasting and actionable recommendations</p>
+        </div>
+
+        <div class="control-panel">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Select Area of Interest</label>
+                    <select class="form-select" id="aoiSelect">
+                        <option value="">-- Select an AOI --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prediction Period</label>
+                    <select class="form-select" id="periodSelect">
+                        <option value="6">6 Months</option>
+                        <option value="12" selected>12 Months</option>
+                        <option value="24">24 Months</option>
+                        <option value="36">36 Months</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prediction Model</label>
+                    <select class="form-select" id="modelType">
+                        <option value="ensemble">Ensemble (Recommended)</option>
+                        <option value="lstm">LSTM Neural Network</option>
+                        <option value="prophet">Prophet Time Series</option>
+                        <option value="arima">ARIMA Statistical</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="generatePredictions()">🔮 Generate Predictions</button>
+        </div>
+
+        <div id="predictionContent">
+            <div class="empty-state">
+                <div class="empty-state-icon">🔮</div>
+                <div class="empty-state-title">No Predictions Generated</div>
+                <p>Select an AOI and click "Generate Predictions" to see forecasts and recommendations</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db;
+        let currentUserId;
+        let selectedAOI = null;
+        let charts = {};
+        const DB_NAME = 'ChangeSentinelDB';
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 2);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+            });
+        }
+
+        async function initialize() {
+            const sessionData = sessionStorage.getItem('loggedInUser');
+            if (!sessionData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+            currentUserId = user.id;
+
+            try {
+                await initDB();
+                await loadUserAOIs();
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        }
+
+        async function loadUserAOIs() {
+            try {
+                const transaction = db.transaction(['aois'], 'readonly');
+                const store = transaction.objectStore('aois');
+                const index = store.index('userId');
+                
+                const aois = await new Promise((resolve) => {
+                    const request = index.getAll(currentUserId);
+                    request.onsuccess = () => resolve(request.result || []);
+                });
+
+                const select = document.getElementById('aoiSelect');
+                select.innerHTML = '<option value="">-- Select an AOI --</option>';
+                
+                aois.forEach(aoi => {
+                    const option = document.createElement('option');
+                    option.value = aoi.id;
+                    option.textContent = `${aoi.name} (${aoi.area} km²)`;
+                    option.dataset.aoi = JSON.stringify(aoi);
+                    select.appendChild(option);
+                });
+
+                if (aois.length === 0) {
+                    select.innerHTML = '<option value="">No AOIs created yet</option>';
+                }
+            } catch (error) {
+                console.error('Error loading AOIs:', error);
+            }
+        }
+
+        function generatePredictions() {
+            const aoiSelect = document.getElementById('aoiSelect');
+            const selectedOption = aoiSelect.options[aoiSelect.selectedIndex];
+            
+            if (!aoiSelect.value) {
+                alert('Please select an Area of Interest first');
+                return;
+            }
+
+            selectedAOI = JSON.parse(selectedOption.dataset.aoi);
+            const period = document.getElementById('periodSelect').value;
+            const model = document.getElementById('modelType').value;
+
+            displayPredictions(selectedAOI, period, model);
+        }
+
+        function displayPredictions(aoi, period, model) {
+            const data = generatePredictionData(aoi, period);
+            const recommendations = generateRecommendations(aoi, data);
+            
+            const content = `
+                <div class="aoi-info">
+                    <h3>📍 ${aoi.name}</h3>
+                    <p><strong>Area:</strong> ${aoi.area} km² | <strong>Forecast Period:</strong> ${period} months | <strong>Model:</strong> ${model}</p>
+                </div>
+
+                <div class="predictions-grid">
+                    ${generatePredictionCards(data, period)}
+                </div>
+
+                <div class="recommendations-section">
+                    <h3 class="chart-title" style="margin-bottom: 20px;">💡 AI-Generated Recommendations</h3>
+                    ${recommendations}
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card full-width">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Forecast Timeline</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="forecastChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Confidence Intervals</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="confidenceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Risk Assessment</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="riskChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('predictionContent').innerHTML = content;
+
+            Object.values(charts).forEach(chart => chart.destroy());
+            charts = {};
+
+            setTimeout(() => {
+                createPredictionCharts(data, period);
+            }, 100);
+        }
+
+        function generatePredictionData(aoi, period) {
+            const months = parseInt(period);
+            const baseForest = 65 + Math.random() * 15;
+            const baseUrban = 15 + Math.random() * 10;
+            
+            return {
+                forestLoss: (Math.random() * 20 + 10).toFixed(1),
+                urbanGrowth: (Math.random() * 15 + 8).toFixed(1),
+                waterChange: (Math.random() * 10 + 5).toFixed(1),
+                temperatureIncrease: (Math.random() * 2 + 0.5).toFixed(1),
+                forestConfidence: 88 + Math.floor(Math.random() * 8),
+                urbanConfidence: 85 + Math.floor(Math.random() * 10),
+                waterConfidence: 80 + Math.floor(Math.random() * 12),
+                timeline: Array.from({length: months}, (_, i) => ({
+                    month: i,
+                    forest: baseForest - (i * 0.5) - Math.random() * 2,
+                    urban: baseUrban + (i * 0.3) + Math.random() * 1.5,
+                    predicted: true
+                }))
+            };
+        }
+
+        function generatePredictionCards(data, period) {
+            return `
+                <div class="prediction-card">
+                    <div class="prediction-icon">🌲</div>
+                    <div class="prediction-title">Forest Loss Forecast</div>
+                    <div class="prediction-value">-${data.forestLoss} km²</div>
+                    <div class="prediction-period">Next ${period} months</div>
+                    <div class="prediction-confidence">
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${data.forestConfidence}%"></div>
+                        </div>
+                        <span class="confidence-text">${data.forestConfidence}%</span>
+                    </div>
+                </div>
+
+                <div class="prediction-card">
+                    <div class="prediction-icon">🏗️</div>
+                    <div class="prediction-title">Urban Expansion</div>
+                    <div class="prediction-value">+${data.urbanGrowth} km²</div>
+                    <div class="prediction-period">Next ${period} months</div>
+                    <div class="prediction-confidence">
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${data.urbanConfidence}%"></div>
+                        </div>
+                        <span class="confidence-text">${data.urbanConfidence}%</span>
+                    </div>
+                </div>
+
+                <div class="prediction-card">
+                    <div class="prediction-icon">💧</div>
+                    <div class="prediction-title">Water Level Change</div>
+                    <div class="prediction-value">-${data.waterChange}%</div>
+                    <div class="prediction-period">Next ${period} months</div>
+                    <div class="prediction-confidence">
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${data.waterConfidence}%"></div>
+                        </div>
+                        <span class="confidence-text">${data.waterConfidence}%</span>
+                    </div>
+                </div>
+
+                <div class="prediction-card">
+                    <div class="prediction-icon">🌡️</div>
+                    <div class="prediction-title">Temperature Impact</div>
+                    <div class="prediction-value">+${data.temperatureIncrease}°C</div>
+                    <div class="prediction-period">Next ${period} months</div>
+                    <div class="prediction-confidence">
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: 87%"></div>
+                        </div>
+                        <span class="confidence-text">87%</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateRecommendations(aoi, data) {
+            const forestLoss = parseFloat(data.forestLoss);
+            const urbanGrowth = parseFloat(data.urbanGrowth);
+            
+            const recs = [];
+
+            if (forestLoss > 15) {
+                recs.push({
+                    priority: 'high',
+                    title: 'Urgent: Implement Forest Conservation',
+                    text: `Our AI models predict significant forest loss of ${data.forestLoss} km² in your monitored area. This represents a critical threat to the ecosystem.`,
+                    actions: [
+                        'Establish protected conservation zones in high-risk areas',
+                        'Deploy ground verification teams to assess current conditions',
+                        'Coordinate with local authorities for enforcement',
+                        'Consider reforestation programs in affected regions'
+                    ]
+                });
+            }
+
+            if (urbanGrowth > 10) {
+                recs.push({
+                    priority: 'medium',
+                    title: 'Monitor Urban Development Impact',
+                    text: `Predicted urban expansion of ${data.urbanGrowth} km² indicates rapid development. This requires sustainable planning to minimize environmental impact.`,
+                    actions: [
+                        'Review and update land-use planning policies',
+                        'Implement green building standards for new construction',
+                        'Create urban green corridors to maintain connectivity',
+                        'Monitor air and water quality in developing areas'
+                    ]
+                });
+            }
+
+            recs.push({
+                priority: 'medium',
+                title: 'Water Resource Management',
+                text: `Water levels are predicted to decrease by ${data.waterChange}%. Proactive measures are needed to ensure sustainable water availability.`,
+                actions: [
+                    'Implement rainwater harvesting systems',
+                    'Monitor groundwater extraction rates',
+                    'Develop water conservation awareness programs',
+                    'Invest in water storage infrastructure'
+                ]
+            });
+
+            recs.push({
+                priority: 'low',
+                title: 'Climate Adaptation Strategy',
+                text: `Temperature increase of ${data.temperatureIncrease}°C expected. Long-term adaptation measures should be considered.`,
+                actions: [
+                    'Plant heat-resistant native species',
+                    'Create shaded corridors and urban cooling zones',
+                    'Develop early warning systems for heat events',
+                    'Educate community on climate adaptation'
+                ]
+            });
+
+            return recs.map(rec => `
+                <div class="recommendation-item priority-${rec.priority}">
+                    <div class="recommendation-header">
+                        <div class="recommendation-title">${rec.title}</div>
+                        <span class="priority-badge priority-${rec.priority}">
+                            ${rec.priority.toUpperCase()} PRIORITY
+                        </span>
+                    </div>
+                    <div class="recommendation-text">${rec.text}</div>
+                    <div class="action-items">
+                        <strong style="color: rgba(255, 255, 255, 0.9);">Recommended Actions:</strong>
+                        ${rec.actions.map(action => `<div class="action-item">${action}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createPredictionCharts(data, period) {
+            const months = parseInt(period);
+            const labels = Array.from({length: months}, (_, i) => `Month ${i + 1}`);
+
+            // Forecast Chart
+            charts.forecast = new Chart(document.getElementById('forecastChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Forest Coverage (Predicted)',
+                        data: data.timeline.map(d => d.forest),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Urban Area (Predicted)',
+                        data: data.timeline.map(d => d.urban),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    },
+                    scales: {
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+
+            // Confidence Chart
+            charts.confidence = new Chart(document.getElementById('confidenceChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Forest Loss', 'Urban Growth', 'Water Change', 'Temperature'],
+                    datasets: [{
+                        label: 'Prediction Confidence (%)',
+                        data: [data.forestConfidence, data.urbanConfidence, data.waterConfidence, 87],
+                        backgroundColor: ['#10b981', '#3b82f6', '#06b6d4', '#f59e0b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 100,
+                            ticks: { color: 'white' }, 
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' } 
+                        },
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+
+            // Risk Chart
+            charts.risk = new Chart(document.getElementById('riskChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+                    datasets: [{
+                        data: [25, 45, 30],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: 'white' } }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', initialize);
+function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 2);
+        request.onsuccess = () => { db = request.result; resolve(db); };
+    });
+}
+request.onupgradeneeded = (event) => {
+    db = event.target.result;
+    
+    if (!db.objectStoreNames.contains('aois')) {
+        const aoiStore = db.createObjectStore('aois', { keyPath: 'id', autoIncrement: true });
+        aoiStore.createIndex('userId', 'userId', { unique: false });
+    }
+    
+    if (!db.objectStoreNames.contains('alerts')) {
+        const alertStore = db.createObjectStore('alerts', { keyPath: 'id', autoIncrement: true });
+        alertStore.createIndex('userId', 'userId', { unique: false });
+    }
+};
+    </script>
+</body>
+</html>

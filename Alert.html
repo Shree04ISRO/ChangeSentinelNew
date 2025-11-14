@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert System - ChangeSentinel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back {
+            padding: 10px 25px;
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .alert-controls {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .alert-card {
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .alert-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+
+        .alert-card.active {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .alert-card.inactive {
+            border-color: #6b7280;
+            background: rgba(107, 114, 128, 0.1);
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .alert-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .alert-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .alert-status {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .status-inactive {
+            background: rgba(107, 114, 128, 0.2);
+            color: #9ca3af;
+        }
+
+        .alert-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .alert-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .detail-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-edit {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-edit:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-toggle {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-toggle:hover {
+            background: rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group option {
+            background: #1e293b;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ef4444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-section">
+            <span style="font-size: 1.8rem;">🛰️</span>
+            <span class="brand-name">ChangeSentinel</span>
+        </div>
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Alert System 🔔</h1>
+            <p class="page-subtitle">Configure automated notifications for environmental changes</p>
+        </div>
+
+        <div class="alert-controls">
+            <div class="controls-header">
+                <h2 style="font-size: 1.3rem; font-weight: 700;">Your Alert Rules</h2>
+                <button class="btn-primary" onclick="openCreateModal()">+ Create New Alert</button>
+            </div>
+        </div>
+
+        <div id="alertsContainer" class="alerts-grid"></div>
+    </div>
+
+    <!-- Create/Edit Alert Modal -->
+    <div class="modal" id="alertModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">Create New Alert Rule</h2>
+            <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 25px;">Set up automated notifications</p>
+            
+            <div class="form-group">
+                <label>Alert Name</label>
+                <input type="text" id="alertName" placeholder="e.g., Deforestation Warning">
+            </div>
+
+            <div class="form-group">
+                <label>Alert Type</label>
+                <select id="alertType">
+                    <option value="deforestation">🌲 Deforestation Detected</option>
+                    <option value="urbanization">🏗️ Urban Expansion</option>
+                    <option value="water">💧 Water Level Change</option>
+                    <option value="temperature">🌡️ Temperature Anomaly</option>
+                    <option value="vegetation">🌿 Vegetation Loss</option>
+                    <option value="custom">⚙️ Custom Threshold</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Monitoring Area (AOI)</label>
+                <select id="alertAOI">
+                    <option value="">All Areas</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Threshold Value (%)</label>
+                <input type="number" id="alertThreshold" placeholder="e.g., 10" min="1" max="100" value="10">
+            </div>
+
+            <div class="form-group">
+                <label>Notification Method</label>
+                <select id="notificationMethod">
+                    <option value="email">📧 Email</option>
+                    <option value="push">📱 Push Notification</option>
+                    <option value="both">📧📱 Both</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Check Frequency</label>
+                <select id="checkFrequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly" selected>Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-primary" style="flex: 1; background: rgba(102, 126, 234, 0.2); border: 2px solid #667eea; color: white;" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" style="flex: 1;" onclick="saveAlert()">Save Alert</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db;
+        let currentUserId;
+        let alerts = [];
+        let editingAlertId = null;
+        const DB_NAME = 'ChangeSentinelDB';
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 2);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains('alerts')) {
+                        const alertStore = db.createObjectStore('alerts', { keyPath: 'id', autoIncrement: true });
+                        alertStore.createIndex('userId', 'userId', { unique: false });
+                    }
+                };
+            });
+        }
+
+        async function initialize() {
+            const sessionData = sessionStorage.getItem('loggedInUser');
+            if (!sessionData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+            currentUserId = user.id;
+
+            try {
+                await initDB();
+                await loadAlerts();
+                await loadAOIs();
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        }
+
+        async function loadAOIs() {
+            try {
+                const transaction = db.transaction(['aois'], 'readonly');
+                const store = transaction.objectStore('aois');
+                const index = store.index('userId');
+                
+                const aois = await new Promise((resolve) => {
+                    const request = index.getAll(currentUserId);
+                    request.onsuccess = () => resolve(request.result || []);
+                });
+
+                const select = document.getElementById('alertAOI');
+                select.innerHTML = '<option value="">All Areas</option>';
+                
+                aois.forEach(aoi => {
+                    const option = document.createElement('option');
+                    option.value = aoi.id;
+                    option.textContent = aoi.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading AOIs:', error);
+            }
+        }
+
+        async function loadAlerts() {
+            try {
+                const transaction = db.transaction(['alerts'], 'readonly');
+                const store = transaction.objectStore('alerts');
+                const index = store.index('userId');
+                
+                alerts = await new Promise((resolve) => {
+                    const request = index.getAll(currentUserId);
+                    request.onsuccess = () => resolve(request.result || []);
+                });
+
+                displayAlerts();
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+                displayAlerts();
+            }
+        }
+
+        function displayAlerts() {
+            const container = document.getElementById('alertsContainer');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-state-icon">🔔</div>
+                        <h3 style="font-size: 1.5rem; margin-bottom: 10px;">No Alert Rules Configured</h3>
+                        <p style="margin-bottom: 25px;">Create your first alert to get notified about environmental changes</p>
+                        <button class="btn-primary" onclick="openCreateModal()">+ Create First Alert</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = alerts.map(alert => {
+                const icons = {
+                    deforestation: '🌲',
+                    urbanization: '🏗️',
+                    water: '💧',
+                    temperature: '🌡️',
+                    vegetation: '🌿',
+                    custom: '⚙️'
+                };
+
+                return `
+                    <div class="alert-card ${alert.active ? 'active' : 'inactive'}">
+                        <div class="alert-header">
+                            <div>
+                                <div class="alert-icon">${icons[alert.type] || '🔔'}</div>
+                                <div class="alert-title">${alert.name}</div>
+                            </div>
+                            <span class="alert-status ${alert.active ? 'status-active' : 'status-inactive'}">
+                                ${alert.active ? 'Active' : 'Inactive'}
+                            </span>
+                        </div>
+                        
+                        <div class="alert-description">
+                            ${getAlertDescription(alert)}
+                        </div>
+
+                        <div class="alert-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Threshold</span>
+                                <span class="detail-value">${alert.threshold}%</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Frequency</span>
+                                <span class="detail-value">${alert.frequency}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Notification</span>
+                                <span class="detail-value">${alert.notification}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Created</span>
+                                <span class="detail-value">${new Date(alert.createdAt).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+
+                        <div class="alert-actions">
+                            <button class="btn-small btn-edit" onclick="editAlert(${alert.id})">✏️ Edit</button>
+                            <button class="btn-small btn-toggle" onclick="toggleAlert(${alert.id})">
+                                ${alert.active ? '⏸️ Pause' : '▶️ Activate'}
+                            </button>
+                            <button class="btn-small btn-delete" onclick="deleteAlert(${alert.id})">🗑️ Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getAlertDescription(alert) {
+            const descriptions = {
+                deforestation: `Get notified when forest coverage decreases by more than ${alert.threshold}% in your monitored areas.`,
+                urbanization: `Alert when urban development expands by more than ${alert.threshold}% in the monitored zone.`,
+                water: `Notification when water body surface changes by more than ${alert.threshold}%.`,
+                temperature: `Alert for temperature anomalies exceeding ${alert.threshold}% of normal range.`,
+                vegetation: `Notification when vegetation health index drops by more than ${alert.threshold}%.`,
+                custom: `Custom threshold alert for ${alert.threshold}% change in monitored parameters.`
+            };
+            return descriptions[alert.type] || 'Custom alert notification';
+        }
+
+        function openCreateModal() {
+            editingAlertId = null;
+            document.getElementById('modalTitle').textContent = 'Create New Alert Rule';
+            document.getElementById('alertName').value = '';
+            document.getElementById('alertType').value = 'deforestation';
+            document.getElementById('alertAOI').value = '';
+            document.getElementById('alertThreshold').value = '10';
+            document.getElementById('notificationMethod').value = 'email';
+            document.getElementById('checkFrequency').value = 'weekly';
+            document.getElementById('alertModal').classList.add('show');
+        }
+
+        function editAlert(alertId) {
+            const alert = alerts.find(a => a.id === alertId);
+            if (!alert) return;
+
+            editingAlertId = alertId;
+            document.getElementById('modalTitle').textContent = 'Edit Alert Rule';
+            document.getElementById('alertName').value = alert.name;
+            document.getElementById('alertType').value = alert.type;
+            document.getElementById('alertAOI').value = alert.aoiId || '';
+            document.getElementById('alertThreshold').value = alert.threshold;
+            document.getElementById('notificationMethod').value = alert.notification;
+            document.getElementById('checkFrequency').value = alert.frequency;
+            document.getElementById('alertModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('alertModal').classList.remove('show');
+            editingAlertId = null;
+        }
+
+        async function saveAlert() {
+            const name = document.getElementById('alertName').value.trim();
+            const type = document.getElementById('alertType').value;
+            const aoiId = document.getElementById('alertAOI').value;
+            const threshold = parseInt(document.getElementById('alertThreshold').value);
+            const notification = document.getElementById('notificationMethod').value;
+            const frequency = document.getElementById('checkFrequency').value;
+
+            if (!name) {
+                alert('Please enter an alert name');
+                return;
+            }
+
+            const alertData = {
+                userId: currentUserId,
+                name: name,
+                type: type,
+                aoiId: aoiId || null,
+                threshold: threshold,
+                notification: notification,
+                frequency: frequency,
+                active: true,
+                createdAt: new Date().toISOString(),
+                lastTriggered: null
+            };
+
+            try {
+                const transaction = db.transaction(['alerts'], 'readwrite');
+                const store = transaction.objectStore('alerts');
+
+                if (editingAlertId) {
+                    alertData.id = editingAlertId;
+                    await new Promise((resolve, reject) => {
+                        const request = store.put(alertData);
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject();
+                    });
+                    alert('✅ Alert updated successfully!');
+                } else {
+                    await new Promise((resolve, reject) => {
+                        const request = store.add(alertData);
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject();
+                    });
+                    alert('✅ Alert created successfully!');
+                }
+
+                closeModal();
+                await loadAlerts();
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('Failed to save alert. Please try again.');
+            }
+        }
+
+        async function toggleAlert(alertId) {
+            try {
+                const alert = alerts.find(a => a.id === alertId);
+                alert.active = !alert.active;
+
+                const transaction = db.transaction(['alerts'], 'readwrite');
+                const store = transaction.objectStore('alerts');
+                
+                await new Promise((resolve, reject) => {
+                    const request = store.put(alert);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject();
+                });
+
+                await loadAlerts();
+            } catch (error) {
+                console.error('Toggle error:', error);
+            }
+        }
+
+        async function deleteAlert(alertId) {
+            if (!confirm('Are you sure you want to delete this alert?')) return;
+
+            try {
+                const transaction = db.transaction(['alerts'], 'readwrite');
+                const store = transaction.objectStore('alerts');
+                
+                await new Promise((resolve, reject) => {
+                    const request = store.delete(alertId);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject();
+                });
+
+                alert('🗑️ Alert deleted successfully!');
+                await loadAlerts();
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Failed to delete alert.');
+            }
+        }
+
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>

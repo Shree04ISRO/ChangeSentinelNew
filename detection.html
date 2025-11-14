@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Detection - ChangeSentinel</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back {
+            padding: 10px 25px;
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .control-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-input, .form-select {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .form-select option {
+            background: #1e293b;
+            color: white;
+        }
+
+        .btn-primary {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            font-size: 1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .maps-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .map-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            overflow: hidden;
+        }
+
+        .map-header {
+            padding: 15px 20px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .map-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .map-date {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .map-wrapper {
+            height: 500px;
+            position: relative;
+        }
+
+        #beforeMap, #afterMap {
+            height: 100%;
+            width: 100%;
+        }
+
+        .results-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .results-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .change-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .change-item {
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .change-type {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .change-description {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 968px) {
+            .maps-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-wrapper {
+                height: 400px;
+            }
+        }
+
+        .legend {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .legend-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-section">
+            <span class="logo">🛰️</span>
+            <span class="brand-name">ChangeSentinel</span>
+        </div>
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Change Detection Analysis 🔍</h1>
+            <p class="page-subtitle">Compare satellite imagery across different time periods</p>
+        </div>
+
+        <div class="control-panel">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Select Area of Interest</label>
+                    <select class="form-select" id="aoiSelect">
+                        <option value="">-- Select a saved AOI --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Or Search Location</label>
+                    <input type="text" class="form-input" id="locationSearch" placeholder="Search location...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Before Date</label>
+                    <input type="date" class="form-input" id="beforeDate" max="">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">After Date (Current)</label>
+                    <input type="date" class="form-input" id="afterDate" max="">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Detection Type</label>
+                    <select class="form-select" id="detectionType">
+                        <option value="all">All Changes</option>
+                        <option value="deforestation">Deforestation</option>
+                        <option value="urbanization">Urbanization</option>
+                        <option value="water">Water Body Changes</option>
+                        <option value="agriculture">Agricultural Changes</option>
+                        <option value="vegetation">Vegetation Loss</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-primary" id="runDetection" onclick="runChangeDetection()">
+                🔍 Run Change Detection
+            </button>
+        </div>
+
+        <div class="maps-container">
+            <div class="map-card">
+                <div class="map-header">
+                    <span class="map-title">📅 Before Image</span>
+                    <span class="map-date" id="beforeDateLabel">Select date</span>
+                </div>
+                <div class="map-wrapper">
+                    <div id="beforeMap"></div>
+                </div>
+            </div>
+
+            <div class="map-card">
+                <div class="map-header">
+                    <span class="map-title">📅 After Image (Current)</span>
+                    <span class="map-date" id="afterDateLabel">Select date</span>
+                </div>
+                <div class="map-wrapper">
+                    <div id="afterMap"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-panel">
+            <div class="results-header">
+                <h2 class="results-title">Detection Results</h2>
+            </div>
+            <div id="resultsContent">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <p>Select an AOI or location, choose dates, then click "Run Change Detection" to analyze changes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Analyzing satellite imagery...</div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let beforeMap, afterMap;
+        let beforeMarker, afterMarker;
+        let beforeLayers = [], afterLayers = [];
+        let db;
+        let currentUserId;
+        let selectedAOI = null;
+        const DB_NAME = 'ChangeSentinelDB';
+        const defaultLocation = [20.5937, 78.9629]; // India center
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 2);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+            });
+        }
+
+        // Check user login and load AOIs
+        async function initialize() {
+            const sessionData = sessionStorage.getItem('loggedInUser');
+            if (!sessionData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+            currentUserId = user.id;
+
+            try {
+                await initDB();
+                await loadUserAOIs();
+            } catch (error) {
+                console.error('DB initialization error:', error);
+            }
+        }
+
+        // Load user's AOIs
+        async function loadUserAOIs() {
+            try {
+                const transaction = db.transaction(['aois'], 'readonly');
+                const store = transaction.objectStore('aois');
+                const index = store.index('userId');
+                
+                const aois = await new Promise((resolve) => {
+                    const request = index.getAll(currentUserId);
+                    request.onsuccess = () => resolve(request.result || []);
+                });
+
+                const select = document.getElementById('aoiSelect');
+                aois.forEach(aoi => {
+                    const option = document.createElement('option');
+                    option.value = aoi.id;
+                    option.textContent = `${aoi.name} (${aoi.area} km²)`;
+                    option.dataset.aoi = JSON.stringify(aoi);
+                    select.appendChild(option);
+                });
+
+                // Handle AOI selection
+                select.addEventListener('change', function() {
+                    if (this.value) {
+                        const aoiData = JSON.parse(this.options[this.selectedIndex].dataset.aoi);
+                        loadAOIOnMaps(aoiData);
+                    } else {
+                        clearAOIFromMaps();
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error loading AOIs:', error);
+            }
+        }
+
+        // Load selected AOI on both maps
+        function loadAOIOnMaps(aoi) {
+            selectedAOI = aoi;
+            
+            // Clear previous layers
+            clearAOIFromMaps();
+
+            // Parse geometry
+            const geometry = JSON.parse(aoi.geometry);
+            
+            // Add to before map
+            const beforeLayer = L.geoJSON(geometry, {
+                style: {
+                    color: '#667eea',
+                    weight: 3,
+                    fillColor: '#667eea',
+                    fillOpacity: 0.2
+                }
+            }).addTo(beforeMap);
+            beforeLayers.push(beforeLayer);
+
+            // Add to after map
+            const afterLayer = L.geoJSON(geometry, {
+                style: {
+                    color: '#667eea',
+                    weight: 3,
+                    fillColor: '#667eea',
+                    fillOpacity: 0.2
+                }
+            }).addTo(afterMap);
+            afterLayers.push(afterLayer);
+
+            // Fit bounds
+            const bounds = beforeLayer.getBounds();
+            beforeMap.fitBounds(bounds);
+            afterMap.fitBounds(bounds);
+
+            // Add popup
+            beforeLayer.bindPopup(`<strong>${aoi.name}</strong><br>${aoi.description || 'No description'}`);
+            afterLayer.bindPopup(`<strong>${aoi.name}</strong><br>${aoi.description || 'No description'}`);
+        }
+
+        // Clear AOI from maps
+        function clearAOIFromMaps() {
+            beforeLayers.forEach(layer => beforeMap.removeLayer(layer));
+            afterLayers.forEach(layer => afterMap.removeLayer(layer));
+            beforeLayers = [];
+            afterLayers = [];
+            selectedAOI = null;
+        }
+
+        // Initialize date inputs
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('afterDate').value = today;
+        document.getElementById('afterDate').max = today;
+        document.getElementById('beforeDate').max = today;
+        
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        document.getElementById('beforeDate').value = oneYearAgo.toISOString().split('T')[0];
+
+        // Update date labels
+        updateDateLabels();
+
+        // Initialize maps
+        function initMaps() {
+            // Before Map
+            beforeMap = L.map('beforeMap').setView(defaultLocation, 5);
+            L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '© Google'
+            }).addTo(beforeMap);
+
+            // After Map
+            afterMap = L.map('afterMap').setView(defaultLocation, 5);
+            L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '© Google'
+            }).addTo(afterMap);
+
+            // Sync map movements
+            beforeMap.on('moveend', syncMaps);
+            afterMap.on('moveend', syncMaps);
+            
+            let isSyncing = false;
+            function syncMaps(e) {
+                if (isSyncing) return;
+                isSyncing = true;
+                
+                const sourceMap = e.target;
+                const targetMap = sourceMap === beforeMap ? afterMap : beforeMap;
+                
+                targetMap.setView(sourceMap.getCenter(), sourceMap.getZoom(), { animate: false });
+                
+                setTimeout(() => { isSyncing = false; }, 100);
+            }
+        }
+
+        // Update date labels
+        function updateDateLabels() {
+            const beforeDate = document.getElementById('beforeDate').value;
+            const afterDate = document.getElementById('afterDate').value;
+            
+            if (beforeDate) {
+                document.getElementById('beforeDateLabel').textContent = new Date(beforeDate).toLocaleDateString();
+            }
+            if (afterDate) {
+                document.getElementById('afterDateLabel').textContent = new Date(afterDate).toLocaleDateString();
+            }
+        }
+
+        document.getElementById('beforeDate').addEventListener('change', updateDateLabels);
+        document.getElementById('afterDate').addEventListener('change', updateDateLabels);
+
+        // Location search with geocoding
+        document.getElementById('locationSearch').addEventListener('keypress', async function(e) {
+            if (e.key === 'Enter') {
+                const location = this.value.trim();
+                if (location) {
+                    await searchLocation(location);
+                }
+            }
+        });
+
+        async function searchLocation(query) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    
+                    beforeMap.setView([lat, lon], 13);
+                    afterMap.setView([lat, lon], 13);
+                    
+                    // Add markers
+                    if (beforeMarker) beforeMap.removeLayer(beforeMarker);
+                    if (afterMarker) afterMap.removeLayer(afterMarker);
+                    
+                    beforeMarker = L.marker([lat, lon]).addTo(beforeMap);
+                    afterMarker = L.marker([lat, lon]).addTo(afterMap);
+
+                    // Clear AOI selection
+                    document.getElementById('aoiSelect').value = '';
+                    clearAOIFromMaps();
+                }
+            } catch (error) {
+                console.error('Location search error:', error);
+            }
+        }
+
+        // Run change detection
+        async function runChangeDetection() {
+            const beforeDate = document.getElementById('beforeDate').value;
+            const afterDate = document.getElementById('afterDate').value;
+            const detectionType = document.getElementById('detectionType').value;
+            const aoiSelect = document.getElementById('aoiSelect').value;
+            const locationSearch = document.getElementById('locationSearch').value;
+            
+            if (!beforeDate || !afterDate) {
+                alert('Please select both before and after dates');
+                return;
+            }
+            
+            if (new Date(beforeDate) >= new Date(afterDate)) {
+                alert('Before date must be earlier than after date');
+                return;
+            }
+
+            if (!aoiSelect && !locationSearch && !beforeMarker) {
+                alert('Please select an AOI or search for a location');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loadingOverlay').classList.add('active');
+            document.getElementById('runDetection').disabled = true;
+
+            // Simulate detection process
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            // Generate simulated results
+            displayResults(beforeDate, afterDate, detectionType);
+
+            // Hide loading
+            document.getElementById('loadingOverlay').classList.remove('active');
+            document.getElementById('runDetection').disabled = false;
+        }
+
+        function displayResults(beforeDate, afterDate, detectionType) {
+            const daysDiff = Math.floor((new Date(afterDate) - new Date(beforeDate)) / (1000 * 60 * 60 * 24));
+            
+            // Generate realistic changes based on detection type
+            const changes = generateChanges(detectionType);
+            
+            const aoiInfo = selectedAOI ? `<p style="margin-bottom: 15px; color: rgba(255,255,255,0.8);">
+                📍 Analyzing AOI: <strong>${selectedAOI.name}</strong> (${selectedAOI.area} km²)
+            </p>` : '';
+            
+            const resultsHTML = `
+                ${aoiInfo}
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${daysDiff}</div>
+                        <div class="stat-label">Days Analyzed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${changes.totalChanges}</div>
+                        <div class="stat-label">Changes Detected</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${changes.area} km²</div>
+                        <div class="stat-label">Area Affected</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${changes.severity}</div>
+                        <div class="stat-label">Severity Level</div>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-title">Change Detection Legend</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ef4444;"></div>
+                        <span>High Impact Changes</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f59e0b;"></div>
+                        <span>Medium Impact Changes</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #10b981;"></div>
+                        <span>Low Impact Changes</span>
+                    </div>
+                </div>
+
+                <h3 style="margin: 25px 0 15px; font-size: 1.2rem;">Detected Changes:</h3>
+                <ul class="change-list">
+                    ${changes.details.map(change => `
+                        <li class="change-item">
+                            <div class="change-type">${change.type}</div>
+                            <div class="change-description">${change.description}</div>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            
+            document.getElementById('resultsContent').innerHTML = resultsHTML;
+
+            // Add visual indicators on maps
+            addChangeOverlays();
+        }
+
+        function generateChanges(type) {
+            const changes = {
+                all: {
+                    totalChanges: Math.floor(Math.random() * 50) + 20,
+                    area: (Math.random() * 50 + 10).toFixed(2),
+                    severity: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)],
+                    details: [
+                        { type: '🌲 Deforestation Detected', description: 'Forest cover reduced by 12.5% in the northern region' },
+                        { type: '🏗️ Urban Expansion', description: 'New construction detected covering 8.3 km²' },
+                        { type: '💧 Water Body Change', description: 'Reservoir level decreased by 15%' },
+                        { type: '🌾 Agricultural Activity', description: 'New farmland developed in eastern areas' }
+                    ]
+                },
+                deforestation: {
+                    totalChanges: Math.floor(Math.random() * 30) + 15,
+                    area: (Math.random() * 30 + 5).toFixed(2),
+                    severity: 'High',
+                    details: [
+                        { type: '🌲 Primary Forest Loss', description: 'Dense forest cover reduced by 18.2% in core area' },
+                        { type: '🌲 Secondary Forest Degradation', description: 'Thinning detected in 25 hectares of secondary growth' },
+                        { type: '🪓 Logging Activity', description: 'Clear-cut patterns identified in 3 separate zones' }
+                    ]
+                },
+                urbanization: {
+                    totalChanges: Math.floor(Math.random() * 40) + 25,
+                    area: (Math.random() * 60 + 20).toFixed(2),
+                    severity: 'Medium',
+                    details: [
+                        { type: '🏗️ New Buildings', description: '127 new structures detected' },
+                        { type: '🛣️ Road Development', description: '15.3 km of new roads constructed' },
+                        { type: '🏘️ Residential Expansion', description: 'Housing development covering 22.5 km²' },
+                        { type: '🏭 Industrial Zone', description: 'New industrial complex in development' }
+                    ]
+                },
+                water: {
+                    totalChanges: Math.floor(Math.random() * 20) + 10,
+                    area: (Math.random() * 40 + 15).toFixed(2),
+                    severity: 'Medium',
+                    details: [
+                        { type: '💧 Water Level Change', description: 'Lake surface area decreased by 22%' },
+                        { type: '🌊 Shoreline Modification', description: 'Coastline erosion detected along 8.5 km' },
+                        { type: '🏞️ Wetland Loss', description: 'Marsh area reduced by 14.8%' }
+                    ]
+                },
+                agriculture: {
+                    totalChanges: Math.floor(Math.random() * 35) + 20,
+                    area: (Math.random() * 80 + 30).toFixed(2),
+                    severity: 'Low',
+                    details: [
+                        { type: '🌾 Crop Pattern Change', description: 'Shift from rice to wheat cultivation in 45 km²' },
+                        { type: '🚜 Land Preparation', description: 'New agricultural plots prepared covering 18.3 km²' },
+                        { type: '🌱 Vegetation Health', description: 'NDVI decrease indicates crop stress in eastern fields' }
+                    ]
+                },
+                vegetation: {
+                    totalChanges: Math.floor(Math.random() * 25) + 15,
+                    area: (Math.random() * 35 + 10).toFixed(2),
+                    severity: 'High',
+                    details: [
+                        { type: '🍂 Vegetation Decline', description: 'Overall vegetation health decreased by 28%' },
+                        { type: '🔥 Fire Impact', description: 'Burn scars detected covering 12.7 km²' },
+                        { type: '🌿 Biomass Reduction', description: 'Significant loss of green cover in analyzed area' }
+                    ]
+                }
+            };
+
+            return changes[type] || changes.all;
+        }
+
+        function addChangeOverlays() {
+            // Remove old overlays
+            afterLayers.forEach(layer => {
+                if (layer._isChangeOverlay) {
+                    afterMap.removeLayer(layer);
+                }
+            });
+            afterLayers = afterLayers.filter(l => !l._isChangeOverlay);
+
+            // Add colored polygons to show change areas
+            const center = afterMap.getCenter();
+            const radius = 0.05;
+
+            // Red area (high impact)
+            const highImpact = L.circle([center.lat + radius, center.lng], {
+                color: '#ef4444',
+                fillColor: '#ef4444',
+                fillOpacity: 0.3,
+                radius: 2000
+            });
+            highImpact._isChangeOverlay = true;
+
+            // Orange area (medium impact)
+            const mediumImpact = L.circle([center.lat - radius, center.lng + radius], {
+                color: '#f59e0b',
+                fillColor: '#f59e0b',
+                fillOpacity: 0.3,
+                radius: 1500
+            });
+            mediumImpact._isChangeOverlay = true;
+
+            // Green area (low impact)
+            const lowImpact = L.circle([center.lat, center.lng - radius], {
+                color: '#10b981',
+                fillColor: '#10b981',
+                fillOpacity: 0.3,
+                radius: 1000
+            });
+            lowImpact._isChangeOverlay = true;
+
+            highImpact.addTo(afterMap).bindPopup('<strong>High Impact Change Area</strong><br>Significant environmental changes detected');
+            mediumImpact.addTo(afterMap).bindPopup('<strong>Medium Impact Change Area</strong><br>Moderate changes observed');
+            lowImpact.addTo(afterMap).bindPopup('<strong>Low Impact Change Area</strong><br>Minor variations detected');
+
+            afterLayers.push(highImpact, mediumImpact, lowImpact);
+        }
+
+        // Initialize on load
+        window.addEventListener('load', async () => {
+            initMaps();
+            await initialize();
+        });
+function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 2);
+        request.onsuccess = () => { db = request.result; resolve(db); };
+    });
+}
+request.onupgradeneeded = (event) => {
+    db = event.target.result;
+    
+    if (!db.objectStoreNames.contains('aois')) {
+        const aoiStore = db.createObjectStore('aois', { keyPath: 'id', autoIncrement: true });
+        aoiStore.createIndex('userId', 'userId', { unique: false });
+    }
+    
+    if (!db.objectStoreNames.contains('alerts')) {
+        const alertStore = db.createObjectStore('alerts', { keyPath: 'id', autoIncrement: true });
+        alertStore.createIndex('userId', 'userId', { unique: false });
+    }
+};
+    </script>
+</body>
+</html>

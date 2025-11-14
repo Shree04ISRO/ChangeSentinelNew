@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - ChangeSentinel</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back {
+            padding: 10px 25px;
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .control-section {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-select {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .form-select option {
+            background: #1e293b;
+            color: white;
+        }
+
+        .btn-primary {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .export-section {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-export {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .chart-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .aoi-info {
+            background: rgba(102, 126, 234, 0.15);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .aoi-info h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .aoi-info p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .insights-section {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .insight-item {
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .insight-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .insight-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 968px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-section">
+            <span style="font-size: 1.8rem;">🛰️</span>
+            <span class="brand-name">ChangeSentinel</span>
+        </div>
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Analytics Dashboard 📊</h1>
+            <p class="page-subtitle">Comprehensive analysis of your monitored areas</p>
+        </div>
+
+        <div class="control-section">
+            <div class="control-grid">
+                <div class="form-group">
+                    <label class="form-label">Select Area of Interest</label>
+                    <select class="form-select" id="aoiSelect">
+                        <option value="">-- Select an AOI --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time Period</label>
+                    <select class="form-select" id="timePeriod">
+                        <option value="1">Last Month</option>
+                        <option value="3">Last 3 Months</option>
+                        <option value="6" selected>Last 6 Months</option>
+                        <option value="12">Last Year</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Analysis Type</label>
+                    <select class="form-select" id="analysisType">
+                        <option value="comprehensive">Comprehensive</option>
+                        <option value="environmental">Environmental Focus</option>
+                        <option value="temporal">Temporal Trends</option>
+                        <option value="comparative">Comparative Analysis</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px; margin-top: 20px;">
+                <button class="btn-primary" onclick="generateAnalysis()">🔍 Generate Analysis</button>
+                <div class="export-section">
+                    <button class="btn-export" onclick="exportData('pdf')">📄 Export PDF</button>
+                    <button class="btn-export" onclick="exportData('csv')">📊 Export CSV</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="analysisContent">
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <div class="empty-state-title">No Analysis Generated</div>
+                <p>Select an AOI and click "Generate Analysis" to view detailed insights</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db;
+        let currentUserId;
+        let selectedAOI = null;
+        let charts = {};
+        const DB_NAME = 'ChangeSentinelDB';
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 2);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+            });
+        }
+
+        async function initialize() {
+            const sessionData = sessionStorage.getItem('loggedInUser');
+            if (!sessionData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+            currentUserId = user.id;
+
+            try {
+                await initDB();
+                await loadUserAOIs();
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        }
+
+        async function loadUserAOIs() {
+            try {
+                const transaction = db.transaction(['aois'], 'readonly');
+                const store = transaction.objectStore('aois');
+                const index = store.index('userId');
+                
+                const aois = await new Promise((resolve) => {
+                    const request = index.getAll(currentUserId);
+                    request.onsuccess = () => resolve(request.result || []);
+                });
+
+                const select = document.getElementById('aoiSelect');
+                select.innerHTML = '<option value="">-- Select an AOI --</option>';
+                
+                aois.forEach(aoi => {
+                    const option = document.createElement('option');
+                    option.value = aoi.id;
+                    option.textContent = `${aoi.name} (${aoi.area} km²)`;
+                    option.dataset.aoi = JSON.stringify(aoi);
+                    select.appendChild(option);
+                });
+
+                if (aois.length === 0) {
+                    select.innerHTML = '<option value="">No AOIs created yet</option>';
+                }
+            } catch (error) {
+                console.error('Error loading AOIs:', error);
+            }
+        }
+
+        function generateAnalysis() {
+            const aoiSelect = document.getElementById('aoiSelect');
+            const selectedOption = aoiSelect.options[aoiSelect.selectedIndex];
+            
+            if (!aoiSelect.value) {
+                alert('Please select an Area of Interest first');
+                return;
+            }
+
+            selectedAOI = JSON.parse(selectedOption.dataset.aoi);
+            const timePeriod = document.getElementById('timePeriod').value;
+            const analysisType = document.getElementById('analysisType').value;
+
+            displayAnalysis(selectedAOI, timePeriod, analysisType);
+        }
+
+        function displayAnalysis(aoi, timePeriod, analysisType) {
+            // Generate simulated data based on AOI
+            const data = generateAnalysisData(aoi, timePeriod);
+            
+            const content = `
+                <div class="aoi-info">
+                    <h3>📍 ${aoi.name}</h3>
+                    <p><strong>Area:</strong> ${aoi.area} km² | <strong>Created:</strong> ${new Date(aoi.createdAt).toLocaleDateString()} | <strong>Status:</strong> ${aoi.status}</p>
+                    <p>${aoi.description || 'No description available'}</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🌲</div>
+                        <div class="stat-value">${data.forestCoverage}%</div>
+                        <div class="stat-label">Forest Coverage</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏗️</div>
+                        <div class="stat-value">${data.urbanization}%</div>
+                        <div class="stat-label">Urbanization Level</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💧</div>
+                        <div class="stat-value">${data.waterBodies}</div>
+                        <div class="stat-label">Water Bodies Detected</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🌿</div>
+                        <div class="stat-value">${data.vegetationIndex}</div>
+                        <div class="stat-label">Vegetation Health Index</div>
+                    </div>
+                </div>
+
+                <div class="insights-section">
+                    <h3 class="chart-title" style="margin-bottom: 20px;">💡 Key Insights</h3>
+                    ${generateInsights(aoi, data)}
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Temporal Change Analysis</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Land Cover Distribution</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Monthly Change Detection</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Environmental Health Score</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card full-width">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Area Changes Over Time</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="areaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('analysisContent').innerHTML = content;
+
+            // Destroy old charts
+            Object.values(charts).forEach(chart => chart.destroy());
+            charts = {};
+
+            // Create new charts
+            setTimeout(() => {
+                createCharts(data, timePeriod);
+            }, 100);
+        }
+
+        function generateAnalysisData(aoi, timePeriod) {
+            const months = parseInt(timePeriod);
+            return {
+                forestCoverage: (65 + Math.random() * 20).toFixed(1),
+                urbanization: (15 + Math.random() * 15).toFixed(1),
+                waterBodies: Math.floor(3 + Math.random() * 8),
+                vegetationIndex: (0.6 + Math.random() * 0.3).toFixed(2),
+                monthlyData: Array.from({length: months}, () => ({
+                    forest: 50 + Math.random() * 30,
+                    urban: 20 + Math.random() * 20,
+                    water: 10 + Math.random() * 15,
+                    agriculture: 15 + Math.random() * 20
+                }))
+            };
+        }
+
+        function generateInsights(aoi, data) {
+            const insights = [
+                {
+                    icon: '🌲',
+                    title: 'Forest Coverage Analysis',
+                    text: `The area shows ${data.forestCoverage}% forest coverage. ${parseFloat(data.forestCoverage) > 70 ? 'This indicates healthy forest density, which should be maintained.' : 'Consider implementing conservation measures to improve forest density.'}`
+                },
+                {
+                    icon: '📈',
+                    title: 'Urban Development Trend',
+                    text: `Urbanization level is at ${data.urbanization}%. ${parseFloat(data.urbanization) > 25 ? 'Rapid urban growth detected - monitor environmental impact closely.' : 'Urban development is moderate - sustainable growth observed.'}`
+                },
+                {
+                    icon: '💧',
+                    title: 'Water Resources',
+                    text: `Detected ${data.waterBodies} water bodies in the monitored area. ${parseInt(data.waterBodies) < 3 ? 'Water resources are limited - consider water conservation strategies.' : 'Adequate water resources present - maintain monitoring for quality.'}`
+                },
+                {
+                    icon: '🌿',
+                    title: 'Vegetation Health',
+                    text: `Vegetation health index is ${data.vegetationIndex}. ${parseFloat(data.vegetationIndex) > 0.7 ? 'Excellent vegetation health - ecosystem is thriving.' : 'Vegetation shows signs of stress - investigate potential causes.'}`
+                }
+            ];
+
+            return insights.map(insight => `
+                <div class="insight-item">
+                    <div class="insight-title">
+                        <span>${insight.icon}</span>
+                        <span>${insight.title}</span>
+                    </div>
+                    <div class="insight-text">${insight.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function createCharts(data, timePeriod) {
+            const months = parseInt(timePeriod);
+            const labels = Array.from({length: months}, (_, i) => {
+                const date = new Date();
+                date.setMonth(date.getMonth() - (months - i - 1));
+                return date.toLocaleDateString('en', {month: 'short', year: 'numeric'});
+            });
+
+            // Line Chart
+            charts.line = new Chart(document.getElementById('lineChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Forest Coverage',
+                        data: data.monthlyData.map(d => d.forest),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Urban Area',
+                        data: data.monthlyData.map(d => d.urban),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    },
+                    scales: {
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+
+            // Pie Chart
+            charts.pie = new Chart(document.getElementById('pieChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Forest', 'Urban', 'Water', 'Agriculture', 'Barren'],
+                    datasets: [{
+                        data: [
+                            parseFloat(data.forestCoverage),
+                            parseFloat(data.urbanization),
+                            10,
+                            15,
+                            100 - parseFloat(data.forestCoverage) - parseFloat(data.urbanization) - 25
+                        ],
+                        backgroundColor: ['#10b981', '#3b82f6', '#06b6d4', '#f59e0b', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: 'white' } }
+                    }
+                }
+            });
+
+            // Bar Chart
+            charts.bar = new Chart(document.getElementById('barChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Changes Detected',
+                        data: Array.from({length: months}, () => Math.floor(5 + Math.random() * 20)),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    },
+                    scales: {
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+
+            // Radar Chart
+            charts.radar = new Chart(document.getElementById('radarChart').getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: ['Forest Health', 'Water Quality', 'Air Quality', 'Biodiversity', 'Soil Quality'],
+                    datasets: [{
+                        label: 'Current Status',
+                        data: [parseFloat(data.forestCoverage), 75, 80, 70, 65],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    },
+                    scales: {
+                        r: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+
+            // Area Chart
+            charts.area = new Chart(document.getElementById('areaChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Forest',
+                        data: data.monthlyData.map(d => d.forest),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.3)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Urban',
+                        data: data.monthlyData.map(d => d.urban),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.3)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Water',
+                        data: data.monthlyData.map(d => d.water),
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.3)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    },
+                    scales: {
+                        y: {
+                            stacked: true,
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportData(format) {
+            if (!selectedAOI) {
+                alert('Please generate analysis first');
+                return;
+            }
+            alert(`Exporting ${selectedAOI.name} analytics as ${format.toUpperCase()}`);
+        }
+
+        window.addEventListener('load', initialize);
+function exportData(format) {
+    if (!selectedAOI) {
+        alert('Please generate analysis first');
+        return;
+    }
+    
+    if (format === 'pdf') {
+        generatePDFReport();
+    } else if (format === 'csv') {
+        generateCSVReport();
+    }
+}
+
+function generatePDFReport() {
+    const content = `ChangeSentinel Analytics Report
+    
+Area of Interest: ${selectedAOI.name}
+Area: ${selectedAOI.area} km²
+Generated: ${new Date().toLocaleString()}
+
+STATISTICS
+Forest Coverage: 68.5%
+Urbanization: 18.3%
+Water Bodies: 5
+Vegetation Index: 0.72
+
+This report was generated by ChangeSentinel.`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Report_${selectedAOI.name}_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    alert('✅ PDF Report downloaded!');
+}
+
+function generateCSVReport() {
+    const csv = `Date,Metric,Value,Unit
+${new Date().toISOString()},Forest Coverage,68.5,%
+${new Date().toISOString()},Urban Area,18.3,%
+${new Date().toISOString()},Water Bodies,5,count`;
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Data_${selectedAOI.name}_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    alert('✅ CSV Data exported!');
+}
+function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 2);
+        request.onsuccess = () => { db = request.result; resolve(db); };
+    });
+}
+request.onupgradeneeded = (event) => {
+    db = event.target.result;
+    
+    if (!db.objectStoreNames.contains('aois')) {
+        const aoiStore = db.createObjectStore('aois', { keyPath: 'id', autoIncrement: true });
+        aoiStore.createIndex('userId', 'userId', { unique: false });
+    }
+    
+    if (!db.objectStoreNames.contains('alerts')) {
+        const alertStore = db.createObjectStore('alerts', { keyPath: 'id', autoIncrement: true });
+        alertStore.createIndex('userId', 'userId', { unique: false });
+    }
+};
+    </script>
+</body>
+</html>

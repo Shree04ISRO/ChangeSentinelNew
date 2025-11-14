@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Support - ChangeSentinel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back {
+            padding: 10px 25px;
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+        }
+
+        .search-box {
+            max-width: 700px;
+            margin: 0 auto 50px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 18px 50px 18px 20px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            opacity: 0.6;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .quick-link-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .quick-link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+
+        .quick-link-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+        }
+
+        .quick-link-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .quick-link-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+
+        .section {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 35px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .faq-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .faq-item {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        .faq-question {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .faq-item.active .faq-toggle {
+            transform: rotate(180deg);
+        }
+
+        .faq-toggle {
+            transition: transform 0.3s ease;
+            opacity: 0.6;
+        }
+
+        .contact-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: grid;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-input, .form-textarea {
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-select {
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-select option {
+            background: #1e293b;
+        }
+
+        .btn-primary {
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            justify-self: start;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .resource-card {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .resource-card:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        .resource-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .resource-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .resource-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .resource-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .resource-link:hover {
+            text-decoration: underline;
+        }
+
+        .contact-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .contact-option {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .contact-option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .contact-option-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .contact-option-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 20px 24px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            max-width: 380px;
+            display: none;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-section">
+            <span style="font-size: 1.8rem;">🛰️</span>
+            <span class="brand-name">ChangeSentinel</span>
+        </div>
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Help & Support ❓</h1>
+            <p class="page-subtitle">We're here to help you get the most out of ChangeSentinel</p>
+        </div>
+
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="Search for help articles, guides, FAQs..." id="searchInput">
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <div class="quick-links">
+            <div class="quick-link-card" onclick="scrollToSection('getting-started')">
+                <div class="quick-link-icon">🚀</div>
+                <div class="quick-link-title">Getting Started</div>
+                <div class="quick-link-desc">Learn the basics and set up your first AOI</div>
+            </div>
+            <div class="quick-link-card" onclick="scrollToSection('faq')">
+                <div class="quick-link-icon">💡</div>
+                <div class="quick-link-title">FAQ</div>
+                <div class="quick-link-desc">Answers to commonly asked questions</div>
+            </div>
+            <div class="quick-link-card" onclick="scrollToSection('resources')">
+                <div class="quick-link-icon">📚</div>
+                <div class="quick-link-title">Documentation</div>
+                <div class="quick-link-desc">Comprehensive guides and tutorials</div>
+            </div>
+            <div class="quick-link-card" onclick="scrollToSection('contact')">
+                <div class="quick-link-icon">💬</div>
+                <div class="quick-link-title">Contact Support</div>
+                <div class="quick-link-desc">Get in touch with our team</div>
+            </div>
+        </div>
+
+        <div class="section" id="getting-started">
+            <h2 class="section-title">🚀 Getting Started</h2>
+            <div class="resources-grid">
+                <div class="resource-card">
+                    <div class="resource-icon">📍</div>
+                    <div class="resource-title">Creating Your First AOI</div>
+                    <div class="resource-desc">Step-by-step guide to define your first Area of Interest</div>
+                    <a href="#" class="resource-link" onclick="showTutorial('aoi'); return false;">Read Guide →</a>
+                </div>
+                <div class="resource-card">
+                    <div class="resource-icon">🔍</div>
+                    <div class="resource-title">Running Change Detection</div>
+                    <div class="resource-desc">Learn how to detect environmental changes using AI</div>
+                    <a href="#" class="resource-link" onclick="showTutorial('detection'); return false;">Read Guide →</a>
+                </div>
+                <div class="resource-card">
+                    <div class="resource-icon">🔔</div>
+                    <div class="resource-title">Setting Up Alerts</div>
+                    <div class="resource-desc">Configure notifications for important changes</div>
+                    <a href="#" class="resource-link" onclick="showTutorial('alerts'); return false;">Read Guide →</a>
+                </div>
+                <div class="resource-card">
+                    <div class="resource-icon">📊</div>
+                    <div class="resource-title">Understanding Analytics</div>
+                    <div class="resource-desc">Make sense of your monitoring data</div>
+                    <a href="#" class="resource-link" onclick="showTutorial('analytics'); return false;">Read Guide →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="faq">
+            <h2 class="section-title">💡 Frequently Asked Questions</h2>
+            <div class="faq-list">
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        How do I create an Area of Interest?
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        To create an AOI: 1) Go to the Interactive Map page, 2) Click "Draw AOI" button, 3) Click on the map to define your area's boundaries, 4) Fill in the AOI details form, and 5) Click "Save AOI" to store it.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        What satellite data sources does ChangeSentinel use?
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        ChangeSentinel integrates data from multiple satellite sources including Sentinel-2, Landsat 8/9, and commercial high-resolution imagery. We automatically select the best available imagery based on your AOI location and monitoring requirements.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        How often is satellite data updated?
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Satellite imagery is updated every 3-7 days depending on your location and weather conditions. We automatically process new imagery as it becomes available and notify you of any detected changes.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        Can I export my data?
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Yes! You can export your data in multiple formats including CSV, GeoJSON, PDF reports, and image archives. Go to the Export Data page to download your monitoring data.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        What types of changes can be detected?
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Our AI can detect deforestation, urban expansion, agricultural changes, water level variations, infrastructure development, land degradation, vegetation health changes, and more. The detection algorithms are continuously updated and improved.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        How do I upgrade my subscription?
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Visit the Subscription page from your dashboard. You can upgrade to Pro or Enterprise plans at any time. Your new features will be available immediately, and billing is prorated.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        Is my data secure?
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Absolutely! We use industry-standard encryption (AES-256) for data at rest and TLS 1.3 for data in transit. All AOIs and monitoring data are private to your account. We're also GDPR compliant and undergo regular security audits.
+                    </div>
+                </div>
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        Can I share my AOIs with team members?
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        Team collaboration is available on Enterprise plans. You can invite team members, set permissions, and share AOIs and reports. Contact our sales team to learn more about Enterprise features.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="resources">
+            <h2 class="section-title">📚 Resources & Documentation</h2>
+            <div class="resources-grid">
+                <div class="resource-card">
+                    <div class="resource-icon">📖</div>
+                    <div class="resource-title">User Guide</div>
+                    <div class="resource-desc">Complete documentation for all features</div>
+                    <a href="#" class="resource-link" onclick="openResource('guide'); return false;">Open Guide →</a>
+                </div>
+                <div class="resource-card">
+                    <div class="resource-icon">🎥</div>
+                    <div class="resource-title">Video Tutorials</div>
+                    <div class="resource-desc">Watch step-by-step video guides</div>
+                    <a href="#" class="resource-link" onclick="openResource('videos'); return false;">Watch Videos →</a>
+                </div>
+                <div class="resource-card">
+                    <div class="resource-icon">🔧</div>
+                    <div class="resource-title">API Documentation</div>
+                    <div class="resource-desc">For developers and integrations</div>
+                    <a href="#" class="resource-link" onclick="openResource('api'); return false;">View API Docs →</a>
+                </div>
+                <div class="resource-card">
+                    <div class="resource-icon">💻</div>
+                    <div class="resource-title">Code Examples</div>
+                    <div class="resource-desc">Sample code and integrations</div>
+                    <a href="#" class="resource-link" onclick="openResource('examples'); return false;">Browse Examples →</a>
+                </div>
+                <div class="resource-card">
+                    <div class="resource-icon">📝</div>
+                    <div class="resource-title">Best Practices</div>
+                    <div class="resource-desc">Tips for effective monitoring</div>
+                    <a href="#" class="resource-link" onclick="openResource('practices'); return false;">Read More →</a>
+                </div>
+                <div class="resource-card">
+                    <div class="resource-icon">🔄</div>
+                    <div class="resource-title">What's New</div>
+                    <div class="resource-desc">Latest updates and features</div>
+                    <a href="#" class="resource-link" onclick="openResource('changelog'); return false;">View Changelog →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="contact">
+            <h2 class="section-title">💬 Contact Support</h2>
+            
+            <div class="contact-options">
+                <div class="contact-option">
+                    <div class="contact-option-icon">📧</div>
+                    <div class="contact-option-title">Email Support</div>
+                    <div class="contact-option-desc">support@changesentinel.com<br>Response within 24 hours</div>
+                </div>
+                <div class="contact-option">
+                    <div class="contact-option-icon">💬</div>
+                    <div class="contact-option-title">Live Chat</div>
+                    <div class="contact-option-desc">Available Mon-Fri<br>9 AM - 6 PM EST</div>
+                </div>
+                <div class="contact-option">
+                    <div class="contact-option-icon">📞</div>
+                    <div class="contact-option-title">Phone Support</div>
+                    <div class="contact-option-desc">Enterprise plan only<br>+1 (555) 123-4567</div>
+                </div>
+            </div>
+
+            <form class="contact-form" onsubmit="submitSupportTicket(event)">
+                <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" class="form-input" id="supportName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" id="supportEmail" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Issue Category</label>
+                    <select class="form-select" id="issueCategory">
+                        <option>Technical Issue</option>
+                        <option>Billing Question</option>
+                        <option>Feature Request</option>
+                        <option>Account Help</option>
+                        <option>General Inquiry</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Describe Your Issue</label>
+                    <textarea class="form-textarea" id="supportMessage" placeholder="Please provide as much detail as possible..." required></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Submit Support Ticket</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let currentUser;
+
+        window.addEventListener('load', () => {
+            const sessionData = sessionStorage.getItem('loggedInUser');
+            if (!sessionData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(sessionData);
+            document.getElementById('supportName').value = currentUser.name || '';
+            document.getElementById('supportEmail').value = currentUser.email || '';
+        });
+
+        function toggleFAQ(element) {
+            const wasActive = element.classList.contains('active');
+            
+            // Close all FAQ items
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Open clicked item if it wasn't active
+            if (!wasActive) {
+                element.classList.add('active');
+            }
+        }
+
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function showTutorial(type) {
+            const tutorials = {
+                'aoi': 'Creating Your First AOI:\n\n1. Navigate to the Interactive Map\n2. Click the "Draw AOI" button\n3. Click on the map to create boundary points\n4. Double-click to finish drawing\n5. Fill in the AOI details\n6. Click "Save AOI"\n\nYour AOI will now appear in your dashboard!',
+                'detection': 'Running Change Detection:\n\n1. Select an AOI from your dashboard\n2. Click "Run Detection" button\n3. Choose date range for comparison\n4. Select detection algorithm\n5. Wait for AI analysis to complete\n6. Review detected changes on the map\n\nYou\'ll receive alerts for significant changes!',
+                'alerts': 'Setting Up Alerts:\n\n1. Go to Alert System page\n2. Click "Create New Alert"\n3. Select the AOI to monitor\n4. Choose alert type (email, SMS, etc.)\n5. Set detection threshold\n6. Configure notification frequency\n7. Save your alert\n\nYou\'ll be notified when changes are detected!',
+                'analytics': 'Understanding Analytics:\n\n1. Navigate to Analytics page\n2. Select your AOI\n3. Choose time period\n4. Review charts and trends\n5. Export data for further analysis\n\nAnalytics help you understand long-term patterns!'
+            };
+
+            alert(tutorials[type] || 'Tutorial coming soon!');
+        }
+
+        function openResource(type) {
+            showNotification('📚 Opening ' + type + ' documentation...');
+            setTimeout(() => {
+                alert('Resource: ' + type.toUpperCase() + '\n\nIn a production environment, this would open the full documentation in a new tab or window.');
+            }, 500);
+        }
+
+        function submitSupportTicket(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('supportName').value;
+            const email = document.getElementById('supportEmail').value;
+            const category = document.getElementById('issueCategory').value;
+            const message = document.getElementById('supportMessage').value;
+
+            if (!message.trim()) {
+                showNotification('❌ Please describe your issue');
+                return;
+            }
+
+            showNotification('📧 Submitting your support ticket...');
+
+            setTimeout(() => {
+                // Clear form
+                document.getElementById('supportMessage').value = '';
+                
+                alert(`✅ Support Ticket Submitted!\n\nTicket ID: #${Math.floor(Math.random() * 100000)}\n\nThank you for contacting us! Our support team will respond to ${email} within 24 hours.\n\nCategory: ${category}`);
+                
+                showNotification('✅ Support ticket submitted successfully!');
+            }, 1500);
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            if (searchTerm.length > 2) {
+                console.log('Searching for:', searchTerm);
+                // In production, this would filter FAQ items and resources
+            }
+        });
+<div class="notification" id="notification"></div>
+
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        // Initialize EmailJS with your Public Key
+        // Replace 'YOUR_PUBLIC_KEY' with your actual EmailJS public key
+        emailjs.init('YOUR_PUBLIC_KEY');
+    </script>
+
+    <script>
+        let currentUser;
+
+        window.addEventListener('load', () => {
+            const sessionData = sessionStorage.getItem('loggedInUser');
+            if (!sessionData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(sessionData);
+            document.getElementById('supportName').value = currentUser.name || '';
+            document.getElementById('supportEmail').value = currentUser.email || '';
+        });
+    </script>
+</body>
+</html>

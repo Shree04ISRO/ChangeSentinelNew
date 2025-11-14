@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription - ChangeSentinel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back {
+            padding: 10px 25px;
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+        }
+
+        .current-plan {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .plan-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .plan-info p {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .plan-badge {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .plan-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 35px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+
+        .plan-card.featured {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .plan-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .plan-price span {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .plan-description {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .plan-features li {
+            padding: 12px 0;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plan-features li::before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .btn-plan {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-plan:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-plan.current {
+            background: rgba(102, 126, 234, 0.3);
+            cursor: default;
+        }
+
+        .btn-plan.current:hover {
+            transform: none;
+        }
+
+        .billing-section {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .billing-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .info-item {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .btn-secondary {
+            padding: 12px 30px;
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            padding: 12px 30px;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .notification {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 20px 24px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            max-width: 380px;
+            display: none;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .faq-section {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .faq-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .faq-answer {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-section">
+            <span style="font-size: 1.8rem;">🛰️</span>
+            <span class="brand-name">ChangeSentinel</span>
+        </div>
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Subscription Plans 💳</h1>
+            <p class="page-subtitle">Choose the perfect plan for your monitoring needs</p>
+        </div>
+
+        <div class="current-plan">
+            <div class="plan-info">
+                <h3>Your Current Plan</h3>
+                <p>Next billing date: <span id="nextBilling">January 15, 2025</span></p>
+            </div>
+            <div class="plan-badge" id="currentPlanBadge">Pro Plan</div>
+        </div>
+
+        <div class="plans-grid">
+            <div class="plan-card">
+                <div class="plan-name">Free</div>
+                <div class="plan-price">$0<span>/month</span></div>
+                <div class="plan-description">Perfect for trying out ChangeSentinel</div>
+                <ul class="plan-features">
+                    <li>Up to 3 Areas of Interest</li>
+                    <li>Basic change detection</li>
+                    <li>Monthly reports</li>
+                    <li>Email support</li>
+                    <li>7-day data retention</li>
+                </ul>
+                <button class="btn-plan" onclick="changePlan('free')">Downgrade to Free</button>
+            </div>
+
+            <div class="plan-card featured">
+                <div class="featured-badge">⭐ CURRENT</div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">$29<span>/month</span></div>
+                <div class="plan-description">Best for professionals and small teams</div>
+                <ul class="plan-features">
+                    <li>Unlimited Areas of Interest</li>
+                    <li>Advanced AI detection</li>
+                    <li>Real-time alerts</li>
+                    <li>Weekly reports</li>
+                    <li>Priority email support</li>
+                    <li>90-day data retention</li>
+                    <li>Export to all formats</li>
+                    <li>Custom AOI shapes</li>
+                </ul>
+                <button class="btn-plan current">Current Plan</button>
+            </div>
+
+            <div class="plan-card">
+                <div class="plan-name">Enterprise</div>
+                <div class="plan-price">$99<span>/month</span></div>
+                <div class="plan-description">For organizations with advanced needs</div>
+                <ul class="plan-features">
+                    <li>Everything in Pro</li>
+                    <li>API access</li>
+                    <li>Custom integrations</li>
+                    <li>Dedicated account manager</li>
+                    <li>24/7 phone support</li>
+                    <li>Unlimited data retention</li>
+                    <li>Advanced analytics</li>
+                    <li>Team collaboration tools</li>
+                    <li>SLA guarantee</li>
+                </ul>
+                <button class="btn-plan" onclick="changePlan('enterprise')">Upgrade to Enterprise</button>
+            </div>
+        </div>
+
+        <div class="billing-section">
+            <h2 class="section-title">💰 Billing Information</h2>
+            <div class="billing-info">
+                <div class="info-item">
+                    <div class="info-label">Payment Method</div>
+                    <div class="info-value">•••• •••• •••• 4242</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Billing Cycle</div>
+                    <div class="info-value">Monthly</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Next Payment</div>
+                    <div class="info-value">$29.00 on Jan 15, 2025</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Billing Email</div>
+                    <div class="info-value" id="billingEmail">user@example.com</div>
+                </div>
+            </div>
+            <button class="btn-secondary" onclick="updatePayment()">Update Payment Method</button>
+            <button class="btn-secondary" onclick="viewInvoices()">View Invoices</button>
+            <button class="btn-danger" onclick="cancelSubscription()">Cancel Subscription</button>
+        </div>
+
+        <div class="faq-section">
+            <h2 class="section-title">❓ Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <div class="faq-question">Can I change my plan at any time?</div>
+                <div class="faq-answer">Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any charges.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">What happens if I downgrade?</div>
+                <div class="faq-answer">If you downgrade, you'll keep your current features until the end of your billing period. After that, your account will be adjusted to the new plan limits.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Do you offer refunds?</div>
+                <div class="faq-answer">We offer a 30-day money-back guarantee for new subscriptions. Contact our support team if you're not satisfied.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">What payment methods do you accept?</div>
+                <div class="faq-answer">We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and bank transfers for Enterprise plans.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Is my data secure?</div>
+                <div class="faq-answer">Absolutely! We use industry-standard encryption and security practices. All data is backed up regularly and stored in secure data centers.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let currentUser;
+
+        window.addEventListener('load', () => {
+            const sessionData = sessionStorage.getItem('loggedInUser');
+            if (!sessionData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(sessionData);
+            document.getElementById('billingEmail').textContent = currentUser.email;
+            
+            // Calculate next billing date (example: 30 days from now)
+            const nextDate = new Date();
+            nextDate.setDate(nextDate.getDate() + 30);
+            document.getElementById('nextBilling').textContent = nextDate.toLocaleDateString('en-US', { 
+                month: 'long', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+        });
+
+        function changePlan(planName) {
+            const planNames = {
+                'free': 'Free',
+                'pro': 'Pro',
+                'enterprise': 'Enterprise'
+            };
+
+            const prices = {
+                'free': 0,
+                'pro': 29,
+                'enterprise': 99
+            };
+
+            if (planName === 'pro') {
+                showNotification('ℹ️ You are already on the Pro plan');
+                return;
+            }
+
+            const confirmed = confirm(`Switch to ${planNames[planName]} plan ($${prices[planName]}/month)?\n\nYour plan will be changed immediately.`);
+            
+            if (confirmed) {
+                // Simulate plan change
+                document.getElementById('currentPlanBadge').textContent = `${planNames[planName]} Plan`;
+                
+                // Update featured badge
+                document.querySelectorAll('.plan-card').forEach(card => {
+                    card.classList.remove('featured');
+                    const badge = card.querySelector('.featured-badge');
+                    if (badge) badge.remove();
+                    
+                    const btn = card.querySelector('.btn-plan');
+                    btn.classList.remove('current');
+                    btn.textContent = btn.textContent.replace('Current Plan', 'Select Plan');
+                });
+
+                // Add featured to new plan
+                const planCards = document.querySelectorAll('.plan-card');
+                const planIndex = planName === 'free' ? 0 : planName === 'enterprise' ? 2 : 1;
+                planCards[planIndex].classList.add('featured');
+                planCards[planIndex].insertAdjacentHTML('afterbegin', '<div class="featured-badge">⭐ CURRENT</div>');
+                planCards[planIndex].querySelector('.btn-plan').classList.add('current');
+                planCards[planIndex].querySelector('.btn-plan').textContent = 'Current Plan';
+
+                showNotification(`✅ Successfully switched to ${planNames[planName]} plan!`);
+            }
+        }
+
+        function updatePayment() {
+            showNotification('💳 Opening payment method update...');
+            setTimeout(() => {
+                alert('Payment Method Update\n\nIn a production environment, this would open a secure payment form to update your card details.');
+            }, 500);
+        }
+
+        function viewInvoices() {
+            showNotification('📄 Loading invoices...');
+            setTimeout(() => {
+                alert('Invoice History\n\nYour invoices:\n\n✓ Dec 15, 2024 - $29.00 (Paid)\n✓ Nov 15, 2024 - $29.00 (Paid)\n✓ Oct 15, 2024 - $29.00 (Paid)\n\nYou can download PDF invoices from your account portal.');
+            }, 500);
+        }
+
+        function cancelSubscription() {
+            const confirmed = confirm('⚠️ Cancel Subscription?\n\nAre you sure you want to cancel your subscription?\n\nYou\'ll lose access to Pro features at the end of your billing period.');
+            
+            if (!confirmed) return;
+
+            const feedback = prompt('We\'re sorry to see you go! 😢\n\nPlease tell us why you\'re canceling (optional):');
+            
+            showNotification('Processing cancellation...');
+            setTimeout(() => {
+                alert('Subscription Cancelled\n\nYour Pro subscription has been cancelled. You\'ll continue to have access until ' + document.getElementById('nextBilling').textContent + '\n\nYou can reactivate anytime before then.');
+                showNotification('✅ Subscription cancelled successfully');
+            }, 1000);
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

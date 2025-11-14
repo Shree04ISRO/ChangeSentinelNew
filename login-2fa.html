@@ -1,0 +1,434 @@
+import React, { useState, useEffect } from 'react';
+import { Mail, Smartphone, Shield, Check, RefreshCw, AlertCircle } from 'lucide-react';
+
+const TwoFactorAuth = () => {
+  const [step, setStep] = useState('login');
+  const [verificationType, setVerificationType] = useState('email');
+  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+  const [resendTimer, setResendTimer] = useState(0);
+  const [user2FASettings, setUser2FASettings] = useState({
+    enabled: false,
+    emailVerified: false,
+    phoneVerified: false,
+    preferredMethod: 'email'
+  });
+
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
+
+  const sendVerificationCode = async (method, destination) => {
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    sessionStorage.setItem('verificationCode', verificationCode);
+    sessionStorage.setItem('codeExpiry', Date.now() + 10 * 60 * 1000);
+
+    if (method === 'email') {
+      console.log(`📧 Email sent to ${destination} with code: ${verificationCode}`);
+      setMessage({ 
+        type: 'success', 
+        text: `📧 Verification code sent to ${destination}` 
+      });
+    } else {
+      console.log(`📱 SMS sent to ${destination} with code: ${verificationCode}`);
+      setMessage({ 
+        type: 'success', 
+        text: `📱 Verification code sent to ${destination}` 
+      });
+    }
+
+    setLoading(false);
+    setResendTimer(60);
+    return true;
+  };
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setMessage({ type: 'error', text: '❌ Please enter both email and password' });
+      return;
+    }
+
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const user2FA = JSON.parse(localStorage.getItem(`2fa_${email}`)) || {
+      enabled: false,
+      emailVerified: false,
+      phoneVerified: false,
+      preferredMethod: 'email',
+      phone: ''
+    };
+
+    setUser2FASettings(user2FA);
+
+    if (user2FA.enabled) {
+      const destination = user2FA.preferredMethod === 'email' ? email : user2FA.phone;
+      await sendVerificationCode(user2FA.preferredMethod, destination);
+      setStep('verify');
+      setVerificationType(user2FA.preferredMethod);
+    } else {
+      setMessage({ 
+        type: 'info', 
+        text: '⚠️ 2FA not enabled. Setting up...' 
+      });
+      setTimeout(() => setStep('setup'), 2000);
+    }
+
+    setLoading(false);
+  };
+
+  const handleCodeChange = (index, value) => {
+    if (value.length > 1) value = value[0];
+    if (!/^\d*$/.test(value)) return;
+
+    const newCode = [...code];
+    newCode[index] = value;
+    setCode(newCode);
+
+    if (value && index < 5) {
+      document.getElementById(`code-${index + 1}`)?.focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      document.getElementById(`code-${index - 1}`)?.focus();
+    }
+  };
+
+  const verifyCode = async () => {
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+
+    const enteredCode = code.join('');
+    const storedCode = sessionStorage.getItem('verificationCode');
+    const expiry = parseInt(sessionStorage.getItem('codeExpiry'));
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    if (Date.now() > expiry) {
+      setMessage({ type: 'error', text: '❌ Code expired. Request a new one.' });
+      setCode(['', '', '', '', '', '']);
+      setLoading(false);
+      return;
+    }
+
+    if (enteredCode === storedCode) {
+      setMessage({ type: 'success', text: '✅ Verification successful!' });
+      
+      sessionStorage.removeItem('verificationCode');
+      sessionStorage.removeItem('codeExpiry');
+      
+      setTimeout(() => {
+        alert('✅ Login successful! You would be redirected to dashboard.');
+        resetForm();
+      }, 2000);
+    } else {
+      setMessage({ type: 'error', text: '❌ Invalid code. Try again.' });
+      setCode(['', '', '', '', '', '']);
+    }
+
+    setLoading(false);
+  };
+
+  const setup2FA = async () => {
+    if (verificationType === 'sms' && !phoneNumber) {
+      setMessage({ type: 'error', text: '❌ Please enter a phone number' });
+      return;
+    }
+
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const settings = {
+      enabled: true,
+      emailVerified: true,
+      phoneVerified: verificationType === 'sms',
+      preferredMethod: verificationType,
+      phone: phoneNumber,
+      setupDate: new Date().toISOString()
+    };
+
+    localStorage.setItem(`2fa_${email}`, JSON.stringify(settings));
+    setUser2FASettings(settings);
+
+    await sendVerificationCode(verificationType, verificationType === 'email' ? email : phoneNumber);
+    
+    setMessage({ 
+      type: 'success', 
+      text: '✅ 2FA enabled! Test code sent.' 
+    });
+
+    setTimeout(() => setStep('verify'), 2000);
+    setLoading(false);
+  };
+
+  const resendCode = async () => {
+    if (resendTimer > 0) return;
+    
+    const destination = verificationType === 'email' ? email : user2FASettings.phone;
+    await sendVerificationCode(verificationType, destination);
+  };
+
+  const resetForm = () => {
+    setStep('login');
+    setEmail('');
+    setPassword('');
+    setPhoneNumber('');
+    setCode(['', '', '', '', '', '']);
+    setMessage({ type: '', text: '' });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 max-w-md w-full border border-white/10 shadow-2xl">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
+            <Shield className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {step === 'login' && '🔐 Secure Login'}
+            {step === 'verify' && '🔑 Verification'}
+            {step === 'setup' && '⚙️ Setup 2FA'}
+          </h1>
+          <p className="text-white/60">
+            {step === 'login' && 'Sign in to ChangeSentinel'}
+            {step === 'verify' && 'Enter verification code'}
+            {step === 'setup' && 'Enable two-factor authentication'}
+          </p>
+        </div>
+
+        {/* Message Alert */}
+        {message.text && (
+          <div className={`mb-6 p-4 rounded-xl flex items-start gap-3 ${
+            message.type === 'success' ? 'bg-green-500/20 border border-green-500/30' :
+            message.type === 'error' ? 'bg-red-500/20 border border-red-500/30' :
+            'bg-blue-500/20 border border-blue-500/30'
+          }`}>
+            <AlertCircle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+              message.type === 'success' ? 'text-green-300' :
+              message.type === 'error' ? 'text-red-300' :
+              'text-blue-300'
+            }`} />
+            <p className={`text-sm ${
+              message.type === 'success' ? 'text-green-300' :
+              message.type === 'error' ? 'text-red-300' :
+              'text-blue-300'
+            }`}>
+              {message.text}
+            </p>
+          </div>
+        )}
+
+        {/* Login Step */}
+        {step === 'login' && (
+          <div className="space-y-5">
+            <div>
+              <label className="block text-white mb-2 font-medium text-sm">Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-indigo-400 focus:bg-white/15 transition-all"
+                placeholder="your@email.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-white mb-2 font-medium text-sm">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-indigo-400 focus:bg-white/15 transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+            >
+              {loading ? 'Signing In...' : 'Sign In Securely'}
+            </button>
+
+            <p className="text-center text-white/50 text-sm mt-4">
+              🔒 Protected by two-factor authentication
+            </p>
+          </div>
+        )}
+
+        {/* Verification Step */}
+        {step === 'verify' && (
+          <div>
+            <div className="mb-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4">
+                {verificationType === 'email' ? 
+                  <Mail className="w-8 h-8 text-white" /> : 
+                  <Smartphone className="w-8 h-8 text-white" />
+                }
+              </div>
+              <p className="text-white/70 text-sm">
+                Enter the 6-digit code sent to your {verificationType}
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex gap-2 justify-center">
+                {code.map((digit, index) => (
+                  <input
+                    key={index}
+                    id={`code-${index}`}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleCodeChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    className="w-12 h-14 text-center text-2xl font-bold bg-white/10 border-2 border-white/20 rounded-xl text-white focus:outline-none focus:border-indigo-400 transition-all"
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={verifyCode}
+                disabled={loading || code.some(d => !d)}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              >
+                {loading ? 'Verifying...' : 'Verify & Login'}
+              </button>
+
+              <button
+                onClick={resendCode}
+                disabled={resendTimer > 0}
+                className="w-full flex items-center justify-center gap-2 text-white/60 hover:text-white transition-colors py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span className="text-sm">
+                  {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend Code'}
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 2FA Setup Step */}
+        {step === 'setup' && (
+          <div className="space-y-6">
+            <div className="bg-amber-500/20 border border-amber-500/30 rounded-xl p-4">
+              <p className="text-amber-300 text-sm flex items-start gap-2">
+                <Shield className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>
+                  Two-factor authentication adds extra security. You'll need to verify your identity on each login.
+                </span>
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-white mb-3 font-medium text-sm">
+                Choose Your Verification Method
+              </label>
+              <div className="space-y-3">
+                <div
+                  onClick={() => setVerificationType('email')}
+                  className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                    verificationType === 'email' 
+                      ? 'bg-indigo-500/20 border-indigo-500 shadow-lg' 
+                      : 'bg-white/5 border-white/20 hover:bg-white/10'
+                  }`}
+                >
+                  <Mail className="w-6 h-6 text-white flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white font-medium">Email Verification</div>
+                    <div className="text-white/50 text-sm truncate">{email}</div>
+                  </div>
+                  {verificationType === 'email' && (
+                    <Check className="w-6 h-6 text-indigo-400 flex-shrink-0" />
+                  )}
+                </div>
+
+                <div
+                  onClick={() => setVerificationType('sms')}
+                  className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                    verificationType === 'sms' 
+                      ? 'bg-indigo-500/20 border-indigo-500 shadow-lg' 
+                      : 'bg-white/5 border-white/20 hover:bg-white/10'
+                  }`}
+                >
+                  <Smartphone className="w-6 h-6 text-white flex-shrink-0" />
+                  <div className="flex-1">
+                    <div className="text-white font-medium">SMS Verification</div>
+                    <div className="text-white/50 text-sm">Text message to phone</div>
+                  </div>
+                  {verificationType === 'sms' && (
+                    <Check className="w-6 h-6 text-indigo-400 flex-shrink-0" />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {verificationType === 'sms' && (
+              <div>
+                <label className="block text-white mb-2 font-medium text-sm">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-indigo-400 focus:bg-white/15 transition-all"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+            )}
+
+            <button
+              onClick={setup2FA}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+            >
+              {loading ? 'Enabling 2FA...' : 'Enable Two-Factor Auth'}
+            </button>
+
+            <button
+              onClick={() => setStep('login')}
+              className="w-full text-white/60 hover:text-white transition-colors text-sm py-2"
+            >
+              Skip for Now
+            </button>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="mt-8 pt-6 border-t border-white/10 text-center">
+          <p className="text-white/40 text-xs">
+            🛡️ ChangeSentinel • Secure by Design
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TwoFactorAuth;

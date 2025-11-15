@@ -56,7 +56,8 @@ exports.handler = async (event, context) => {
 
     console.log('MSG91 Verify Response:', response.data);
 
-    if (response.data.type === 'success') {
+    // MSG91 verify returns success differently  
+    if (response.data.type === 'success' || response.data.message === 'OTP verified success') {
       return {
         statusCode: 200,
         headers: {

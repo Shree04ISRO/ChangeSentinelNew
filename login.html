@@ -125,6 +125,13 @@
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-secondary {
+            background: #6b7280;
+            margin-top: 10px;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #4b5563;
+        }
         .link-group {
             text-align: center;
             margin-top: 25px;
@@ -146,36 +153,6 @@
             margin-bottom: 20px;
         }
         .info-box p { color: #1e40af; font-size: 0.9rem; line-height: 1.5; }
-        
-        /* Phone Input Styles */
-        .phone-input-wrapper {
-            display: flex;
-            gap: 10px;
-        }
-        .country-select {
-            width: 140px;
-            padding: 15px 10px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            background: #f9fafb;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .country-select:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-        .phone-input {
-            flex: 1;
-        }
-        .help-text {
-            font-size: 0.85rem;
-            color: #6b7280;
-            margin-top: 5px;
-        }
     </style>
 </head>
 <body>
@@ -212,16 +189,16 @@
             </div>
         </div>
 
-        <!-- STEP 2: SMS Verification -->
+        <!-- STEP 2: Email Verification -->
         <div id="step2" class="form-step">
             <div class="info-box">
-                <p>📱 <strong>SMS Verification Required</strong><br>
-                A 6-digit code has been sent to your phone</p>
+                <p>📧 <strong>Email Verification Required</strong><br>
+                A 6-digit code has been sent to your email</p>
             </div>
 
             <div style="text-align: center; margin-bottom: 25px;">
-                <div style="font-size: 3rem; margin-bottom: 10px;">📱</div>
-                <p style="color: #6b7280;">Enter the code sent to <strong id="phoneDisplay"></strong></p>
+                <div style="font-size: 3rem; margin-bottom: 10px;">📧</div>
+                <p style="color: #6b7280;">Enter the code sent to <strong id="emailDisplay"></strong></p>
             </div>
 
             <div class="code-inputs">
@@ -235,9 +212,7 @@
 
             <button class="btn" onclick="verifyCode()" id="verifyBtn" disabled>Verify & Login</button>
 
-            <p class="timer-text" id="resendTimer">
-                Didn't receive code? <a href="#" onclick="resendCode(); return false;" id="resendLink">Resend</a>
-            </p>
+            <button class="btn btn-secondary" onclick="resendCode()" id="resendBtn">Resend Code</button>
         </div>
     </div>
 
@@ -247,8 +222,8 @@
         let db = null;
         let currentStep = 1;
         let currentUser = null;
-        let resendCountdown = 0;
-        let userPhone = '';
+        let userEmail = '';
+        let userPassword = '';
 
         // IMPORTANT: Get your actual Netlify site URL
         const API_BASE = window.location.hostname === 'localhost' 
@@ -289,7 +264,7 @@
             
             const titles = {
                 1: { title: 'Secure Login', subtitle: 'Sign in to ChangeSentinel' },
-                2: { title: 'SMS Verification', subtitle: 'Enter your code' }
+                2: { title: 'Email Verification', subtitle: 'Enter your code' }
             };
             
             document.getElementById('stepTitle').textContent = titles[step].title;
@@ -337,26 +312,17 @@
                 }
 
                 currentUser = user;
+                userEmail = email;
+                userPassword = password;
                 
-                // Check for phone number
-                const twoFASettings = JSON.parse(localStorage.getItem(`2fa_${email}`)) || null;
+                // Send verification email using Netlify Function
+                showAlert('✅ Login successful! Sending verification code...', 'success');
+                await sendVerificationEmail(email);
                 
-                if (!twoFASettings || !twoFASettings.phone) {
-                    showAlert('❌ No phone number registered. Please contact support.', 'error');
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Sign In';
-                    return;
-                }
-
-                userPhone = twoFASettings.phone;
-                
-                // Send SMS using Netlify Function
-                showAlert('✅ Login successful! Sending SMS...', 'success');
-                await sendSMS(userPhone);
-                
-                // Show phone number (masked)
-                const maskedPhone = userPhone.slice(0, -4).replace(/\d/g, '*') + userPhone.slice(-4);
-                document.getElementById('phoneDisplay').textContent = maskedPhone;
+                // Show email (partially masked)
+                const emailParts = email.split('@');
+                const maskedEmail = emailParts[0].slice(0, 2) + '***@' + emailParts[1];
+                document.getElementById('emailDisplay').textContent = maskedEmail;
                 
                 setTimeout(() => goToStep(2), 1500);
 
@@ -369,66 +335,30 @@
             loginBtn.textContent = 'Sign In';
         }
 
-        async function sendSMS(phoneNumber) {
+        async function sendVerificationEmail(email) {
             try {
-                const response = await fetch(`${API_BASE}/send-sms`, {
+                const response = await fetch(`${API_BASE}/send-verification`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ phoneNumber })
+                    body: JSON.stringify({ email: email })
                 });
 
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.error || 'Failed to send SMS');
+                    throw new Error(data.error || 'Failed to send verification email');
                 }
 
-                console.log('✅ SMS sent:', data.messageSid);
-                showAlert('✅ SMS sent! Check your phone.', 'success');
-                startResendCountdown();
+                console.log('✅ Verification email sent');
+                showAlert('✅ Verification code sent! Check your email.', 'success');
 
             } catch (error) {
-                console.error('SMS Error:', error);
-                showAlert(`⚠️ SMS failed: ${error.message}`, 'info');
+                console.error('Email Error:', error);
+                showAlert(`⚠️ Failed to send email: ${error.message}`, 'error');
+                throw error;
             }
-        }
-
-        function startResendCountdown() {
-            resendCountdown = 60;
-            updateResendTimer();
-
-            const interval = setInterval(() => {
-                resendCountdown--;
-                updateResendTimer();
-                if (resendCountdown <= 0) clearInterval(interval);
-            }, 1000);
-        }
-
-        function updateResendTimer() {
-            const timerElement = document.getElementById('resendTimer');
-            const resendLink = document.getElementById('resendLink');
-
-            if (resendCountdown > 0) {
-                timerElement.innerHTML = `Didn't receive code? Resend in ${resendCountdown}s`;
-                if (resendLink) {
-                    resendLink.style.pointerEvents = 'none';
-                    resendLink.style.opacity = '0.5';
-                }
-            } else {
-                timerElement.innerHTML = 'Didn\'t receive code? <a href="#" onclick="resendCode(); return false;" id="resendLink">Resend</a>';
-                if (resendLink) {
-                    resendLink.style.pointerEvents = 'auto';
-                    resendLink.style.opacity = '1';
-                }
-            }
-        }
-
-        async function resendCode() {
-            if (resendCountdown > 0) return;
-            showAlert('📱 Resending SMS code...', 'info');
-            await sendSMS(userPhone);
         }
 
         function moveToNext(current, nextId) {
@@ -477,7 +407,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        phoneNumber: userPhone,
+                        email: userEmail,
                         code: enteredCode
                     })
                 });
@@ -509,6 +439,24 @@
             verifyBtn.textContent = 'Verify & Login';
         }
 
+        async function resendCode() {
+            const resendBtn = document.getElementById('resendBtn');
+            
+            resendBtn.disabled = true;
+            resendBtn.textContent = 'Sending...';
+
+            try {
+                await sendVerificationEmail(userEmail);
+                showAlert('✅ New code sent to your email!', 'success');
+                clearCodeInputs();
+            } catch (error) {
+                showAlert('❌ Failed to resend code', 'error');
+            }
+
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend Code';
+        }
+
         function clearCodeInputs() {
             for (let i = 1; i <= 6; i++) {
                 document.getElementById(`code${i}`).value = '';
@@ -524,6 +472,9 @@
                 organization: currentUser.organization,
                 loginTime: new Date().toISOString()
             }));
+
+            sessionStorage.setItem('userEmail', userEmail);
+            sessionStorage.setItem('isVerified', 'true');
 
             showAlert('✅ Login successful! Redirecting...', 'success');
 

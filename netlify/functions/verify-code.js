@@ -1,6 +1,4 @@
-// Store verification codes (shared with send-sms function)
-// In production, use Redis or a database
-const verificationCodes = new Map();
+const axios = require('axios');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight
@@ -16,22 +14,10 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // Only allow POST
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
-  }
-
   try {
-    // Parse request body
     const { phoneNumber, code } = JSON.parse(event.body);
 
+    // Validate inputs
     if (!phoneNumber || !code) {
       return {
         statusCode: 400,
@@ -40,54 +26,44 @@ exports.handler = async (event, context) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
+          success: false, 
           error: 'Phone number and code are required' 
         })
       };
     }
 
-    // Get stored code
-    const storedData = verificationCodes.get(phoneNumber);
+    // Get MSG91 credentials
+    const msg91AuthKey = process.env.MSG91_AUTH_KEY;
 
-    if (!storedData) {
-      return {
-        statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          error: 'No verification code found. Please request a new code.' 
-        })
-      };
+    if (!msg91AuthKey) {
+      throw new Error('MSG91_AUTH_KEY not configured');
     }
 
-    // Check expiration
-    if (Date.now() > storedData.expiresAt) {
-      verificationCodes.delete(phoneNumber);
-      return {
-        statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          error: 'Verification code expired. Please request a new code.' 
-        })
-      };
-    }
+    // Remove +91 prefix for MSG91
+    const mobileNumber = phoneNumber.replace('+91', '');
 
-    // Verify code
-    if (storedData.code === code) {
-      // Remove used code
-      verificationCodes.delete(phoneNumber);
-      
+    // Verify OTP via MSG91 - simplified version
+    const response = await axios.get(
+      `https://control.msg91.com/api/v5/otp/verify`,
+      {
+        params: {
+          authkey: msg91AuthKey,
+          mobile: mobileNumber,
+          otp: code
+        }
+      }
+    );
+
+    console.log('MSG91 Verify Response:', response.data);
+
+    if (response.data.type === 'success') {
       return {
         statusCode: 200,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
+        body: JSON.stringify({ 
           success: true,
           message: 'Verification successful'
         })
@@ -100,23 +76,40 @@ exports.handler = async (event, context) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
-          error: 'Invalid verification code' 
+          success: false,
+          error: 'Invalid or expired verification code'
         })
       };
     }
 
   } catch (error) {
-    console.error('Verification Error:', error);
-    
+    console.error('Error verifying code:', error.response?.data || error.message);
+
+    // Handle specific MSG91 errors
+    if (error.response?.data?.type === 'error') {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          success: false,
+          error: error.response.data.message || 'Invalid verification code'
+        })
+      };
+    }
+
     return {
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
+      body: JSON.stringify({ 
+        success: false, 
         error: 'Verification failed',
-        details: error.message
+        details: error.response?.data?.message || error.message
       })
     };
   }

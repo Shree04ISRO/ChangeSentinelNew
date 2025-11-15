@@ -39,20 +39,18 @@ exports.handler = async (event, context) => {
       throw new Error('MSG91_AUTH_KEY not configured');
     }
 
-    // Remove +91 prefix for MSG91
+    // Format mobile number (10 digits without +91)
     const mobileNumber = phoneNumber.replace('+91', '');
+    
+    console.log('Verifying OTP for mobile:', mobileNumber);
+    console.log('OTP entered:', code);
 
-    // Verify OTP via MSG91 - simplified version
-    const response = await axios.get(
-      `https://control.msg91.com/api/v5/otp/verify`,
-      {
-        params: {
-          authkey: msg91AuthKey,
-          mobile: mobileNumber,
-          otp: code
-        }
-      }
-    );
+    // Verify OTP via MSG91
+    const url = `https://control.msg91.com/api/v5/otp/verify?authkey=${msg91AuthKey}&mobile=91${mobileNumber}&otp=${code}`;
+    
+    console.log('Verify URL:', url);
+    
+    const response = await axios.get(url);
 
     console.log('MSG91 Verify Response:', response.data);
 

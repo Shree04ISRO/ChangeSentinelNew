@@ -1,7 +1,4 @@
-const axios = require('axios');
-
-// In-memory storage for verification codes (will be replaced by MSG91's OTP service)
-const verificationCodes = new Map();
+const twilio = require('twilio');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight
@@ -20,8 +17,10 @@ exports.handler = async (event, context) => {
   try {
     const { phoneNumber } = JSON.parse(event.body);
 
+    console.log('Sending verification to:', phoneNumber);
+
     // Validate phone number
-    if (!phoneNumber || !phoneNumber.startsWith('+91')) {
+    if (!phoneNumber || !phoneNumber.startsWith('+')) {
       return {
         statusCode: 400,
         headers: {
@@ -30,74 +29,49 @@ exports.handler = async (event, context) => {
         },
         body: JSON.stringify({ 
           success: false, 
-          error: 'Invalid Indian phone number. Must start with +91' 
+          error: 'Invalid phone number format. Must include country code with +' 
         })
       };
     }
 
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Get Twilio credentials from environment
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
 
-    // Store OTP (expires in 10 minutes)
-    verificationCodes.set(phoneNumber, {
-      code: otp,
-      timestamp: Date.now(),
-      expiresIn: 10 * 60 * 1000 // 10 minutes
-    });
-
-    // Clean up old codes
-    const now = Date.now();
-    for (const [phone, data] of verificationCodes.entries()) {
-      if (now - data.timestamp > data.expiresIn) {
-        verificationCodes.delete(phone);
-      }
+    if (!accountSid || !authToken || !verifyServiceSid) {
+      throw new Error('Twilio credentials not configured');
     }
 
-    // Send SMS via MSG91 OTP API (no template/sender ID required)
-    const msg91AuthKey = process.env.MSG91_AUTH_KEY;
+    // Initialize Twilio client
+    const client = twilio(accountSid, authToken);
 
-    if (!msg91AuthKey) {
-      throw new Error('MSG91_AUTH_KEY not configured');
-    }
+    // Send verification code using Twilio Verify
+    const verification = await client.verify.v2
+      .services(verifyServiceSid)
+      .verifications
+      .create({
+        to: phoneNumber,
+        channel: 'sms'
+      });
 
-    // Remove +91 prefix and format for MSG91
-    const mobileNumber = phoneNumber.replace('+91', '');
-    
-    console.log('Sending OTP to mobile:', mobileNumber);
+    console.log('Verification status:', verification.status);
 
-    // MSG91 OTP API - Let MSG91 generate and send OTP
-    const url = `https://control.msg91.com/api/v5/otp?authkey=${msg91AuthKey}&mobile=91${mobileNumber}`;
-    
-    console.log('Request URL:', url);
-    
-    const response = await axios.post(url, {}, {
+    return {
+      statusCode: 200,
       headers: {
+        'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json'
-      }
-    });
-
-    console.log('MSG91 Full Response:', JSON.stringify(response.data, null, 2));
-
-    // MSG91 OTP API returns success differently
-    if (response.data.type === 'success' || response.data.request_id) {
-      return {
-        statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          success: true, 
-          message: 'Verification code sent successfully',
-          phoneNumber: phoneNumber
-        })
-      };
-    } else {
-      throw new Error(response.data.message || 'Failed to send SMS');
-    }
+      },
+      body: JSON.stringify({ 
+        success: true, 
+        message: 'Verification code sent successfully',
+        phoneNumber: phoneNumber
+      })
+    };
 
   } catch (error) {
-    console.error('Error sending SMS:', error.response?.data || error.message);
+    console.error('Error sending verification:', error);
     
     return {
       statusCode: 500,
@@ -108,7 +82,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ 
         success: false, 
         error: 'Failed to send SMS',
-        details: error.response?.data?.message || error.message
+        details: error.message
       })
     };
   }

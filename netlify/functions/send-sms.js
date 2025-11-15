@@ -1,8 +1,5 @@
 const twilio = require('twilio');
 
-// Store verification codes temporarily (in production, use a database)
-const verificationCodes = new Map();
-
 exports.handler = async (event, context) => {
   // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
@@ -47,9 +44,9 @@ exports.handler = async (event, context) => {
     // Validate Twilio credentials
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+    const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
 
-    if (!accountSid || !authToken || !fromNumber) {
+    if (!accountSid || !authToken || !verifyServiceSid) {
       console.error('Missing Twilio credentials');
       return {
         statusCode: 500,
@@ -64,26 +61,19 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Generate 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Store code with 5-minute expiration
-    verificationCodes.set(phoneNumber, {
-      code,
-      expiresAt: Date.now() + 5 * 60 * 1000
-    });
-
     // Initialize Twilio client
     const client = twilio(accountSid, authToken);
 
-    // Send SMS
-    const message = await client.messages.create({
-      body: `Your ChangeSentinel verification code is: ${code}. Valid for 5 minutes.`,
-      from: fromNumber,
-      to: phoneNumber
-    });
+    // Send verification code using Twilio Verify
+    const verification = await client.verify.v2
+      .services(verifyServiceSid)
+      .verifications
+      .create({
+        to: phoneNumber,
+        channel: 'sms'
+      });
 
-    console.log('SMS sent successfully:', message.sid);
+    console.log('Verification sent:', verification.sid, 'Status:', verification.status);
 
     return {
       statusCode: 200,
@@ -93,7 +83,8 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
-        messageSid: message.sid,
+        verificationSid: verification.sid,
+        status: verification.status,
         message: 'SMS sent successfully'
       })
     };

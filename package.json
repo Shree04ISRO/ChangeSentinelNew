@@ -1,11 +1,8 @@
 {
-  "name": "changesentinel",
+  "name": "changesentinel-functions",
   "version": "1.0.0",
-  "description": "ChangeSentinel with SMS authentication",
+  "description": "Netlify Functions for ChangeSentinel SMS verification",
   "dependencies": {
-    "twilio": "^4.19.0"
-  },
-  "scripts": {
-    "start": "netlify dev"
+    "axios": "^1.6.0"
   }
 }

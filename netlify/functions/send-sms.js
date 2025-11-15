@@ -78,7 +78,8 @@ exports.handler = async (event, context) => {
 
     console.log('MSG91 Response:', response.data);
 
-    if (response.data.type === 'success') {
+    // MSG91 OTP API returns success differently
+    if (response.data.type === 'success' || response.data.request_id) {
       return {
         statusCode: 200,
         headers: {

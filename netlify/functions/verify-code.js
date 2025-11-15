@@ -106,7 +106,7 @@ exports.handler = async (event, context) => {
     }
 
   } catch (error) {
-    console.error('Verification error:', error);
+    console.error('Verification Error:', error);
     
     return {
       statusCode: 500,

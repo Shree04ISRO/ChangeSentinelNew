@@ -1,4 +1,5 @@
-const twilio = require('twilio');
+// Shared verification codes storage
+const verificationCodes = new Map();
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight
@@ -15,12 +16,12 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { phoneNumber, code } = JSON.parse(event.body);
+    const { email, code } = JSON.parse(event.body);
 
-    console.log('Verifying code for:', phoneNumber);
+    console.log('Verifying code for:', email);
 
     // Validate inputs
-    if (!phoneNumber || !code) {
+    if (!email || !code) {
       return {
         statusCode: 400,
         headers: {
@@ -29,35 +30,51 @@ exports.handler = async (event, context) => {
         },
         body: JSON.stringify({ 
           success: false, 
-          error: 'Phone number and code are required' 
+          error: 'Email and code are required' 
         })
       };
     }
 
-    // Get Twilio credentials from environment
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+    // Get stored verification data
+    const storedData = verificationCodes.get(email);
 
-    if (!accountSid || !authToken || !verifyServiceSid) {
-      throw new Error('Twilio credentials not configured');
+    if (!storedData) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          success: false,
+          error: 'No verification code found. Please request a new code.'
+        })
+      };
     }
 
-    // Initialize Twilio client
-    const client = twilio(accountSid, authToken);
+    // Check if code expired
+    const now = Date.now();
+    if (now - storedData.timestamp > storedData.expiresIn) {
+      verificationCodes.delete(email);
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          success: false,
+          error: 'Verification code expired. Please request a new code.'
+        })
+      };
+    }
 
-    // Verify the code using Twilio Verify
-    const verificationCheck = await client.verify.v2
-      .services(verifyServiceSid)
-      .verificationChecks
-      .create({
-        to: phoneNumber,
-        code: code
-      });
-
-    console.log('Verification check status:', verificationCheck.status);
-
-    if (verificationCheck.status === 'approved') {
+    // Verify the code
+    if (storedData.code === code) {
+      verificationCodes.delete(email);
+      
+      console.log('Verification successful for:', email);
+      
       return {
         statusCode: 200,
         headers: {
@@ -78,7 +95,7 @@ exports.handler = async (event, context) => {
         },
         body: JSON.stringify({ 
           success: false,
-          error: 'Invalid or expired verification code'
+          error: 'Invalid verification code'
         })
       };
     }

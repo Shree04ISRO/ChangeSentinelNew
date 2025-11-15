@@ -1,8 +1,0 @@
-{
-  "name": "changesentinel-functions",
-  "version": "1.0.0",
-  "description": "Netlify Functions for ChangeSentinel SMS verification",
-  "dependencies": {
-    "axios": "^1.6.0"
-  }
-}

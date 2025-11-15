@@ -60,23 +60,29 @@ exports.handler = async (event, context) => {
       throw new Error('MSG91_AUTH_KEY not configured');
     }
 
-    // Remove +91 prefix for MSG91 (they expect 10-digit number)
-    const mobileNumber = phoneNumber.replace('+91', '');
+    // Remove +91 prefix for MSG91 (they expect 10-digit number with country code)
+    const mobileNumber = '91' + phoneNumber.replace('+91', '');
+    
+    console.log('Sending OTP to mobile:', mobileNumber);
+    console.log('Generated OTP:', otp);
 
-    // MSG91 OTP API call - simplified version without template
-    const response = await axios.get(
+    // MSG91 OTP API - Send OTP (let MSG91 generate and send)
+    const response = await axios.post(
       `https://control.msg91.com/api/v5/otp`,
       {
+        mobile: mobileNumber
+      },
+      {
         params: {
-          authkey: msg91AuthKey,
-          mobile: mobileNumber,
-          otp: otp,
-          otp_expiry: 10
+          authkey: msg91AuthKey
+        },
+        headers: {
+          'Content-Type': 'application/json'
         }
       }
     );
 
-    console.log('MSG91 Response:', response.data);
+    console.log('MSG91 Full Response:', JSON.stringify(response.data, null, 2));
 
     // MSG91 OTP API returns success differently
     if (response.data.type === 'success' || response.data.request_id) {

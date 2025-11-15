@@ -1,4 +1,4 @@
-const axios = require('axios');
+const twilio = require('twilio');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight
@@ -17,6 +17,8 @@ exports.handler = async (event, context) => {
   try {
     const { phoneNumber, code } = JSON.parse(event.body);
 
+    console.log('Verifying code for:', phoneNumber);
+
     // Validate inputs
     if (!phoneNumber || !code) {
       return {
@@ -32,30 +34,30 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Get MSG91 credentials
-    const msg91AuthKey = process.env.MSG91_AUTH_KEY;
+    // Get Twilio credentials from environment
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
 
-    if (!msg91AuthKey) {
-      throw new Error('MSG91_AUTH_KEY not configured');
+    if (!accountSid || !authToken || !verifyServiceSid) {
+      throw new Error('Twilio credentials not configured');
     }
 
-    // Format mobile number (10 digits without +91)
-    const mobileNumber = phoneNumber.replace('+91', '');
-    
-    console.log('Verifying OTP for mobile:', mobileNumber);
-    console.log('OTP entered:', code);
+    // Initialize Twilio client
+    const client = twilio(accountSid, authToken);
 
-    // Verify OTP via MSG91
-    const url = `https://control.msg91.com/api/v5/otp/verify?authkey=${msg91AuthKey}&mobile=91${mobileNumber}&otp=${code}`;
-    
-    console.log('Verify URL:', url);
-    
-    const response = await axios.get(url);
+    // Verify the code using Twilio Verify
+    const verificationCheck = await client.verify.v2
+      .services(verifyServiceSid)
+      .verificationChecks
+      .create({
+        to: phoneNumber,
+        code: code
+      });
 
-    console.log('MSG91 Verify Response:', response.data);
+    console.log('Verification check status:', verificationCheck.status);
 
-    // MSG91 verify returns success differently  
-    if (response.data.type === 'success' || response.data.message === 'OTP verified success') {
+    if (verificationCheck.status === 'approved') {
       return {
         statusCode: 200,
         headers: {
@@ -82,22 +84,7 @@ exports.handler = async (event, context) => {
     }
 
   } catch (error) {
-    console.error('Error verifying code:', error.response?.data || error.message);
-
-    // Handle specific MSG91 errors
-    if (error.response?.data?.type === 'error') {
-      return {
-        statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          success: false,
-          error: error.response.data.message || 'Invalid verification code'
-        })
-      };
-    }
+    console.error('Error verifying code:', error);
 
     return {
       statusCode: 500,
@@ -108,7 +95,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ 
         success: false, 
         error: 'Verification failed',
-        details: error.response?.data?.message || error.message
+        details: error.message
       })
     };
   }
